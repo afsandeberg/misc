@@ -9,18 +9,19 @@ MaS.PoGo.Settings = {
     showSideBarBtn: true,
     showMapReshBtn: true,
     showSideBarOnLoad: false,
-    autorefresh: true,
+    autoRefresh: true,
     refreshInterval: 30, //sec 
     sideBarType: "card", //card or table
-    tableSort: "nr" //Prop to sort table view by
+    sortType: "Nr" //Prop to sort table view by
 };
 
 MaS.PoGo.fn = (function () {
     var allPoke;
     var notifyPoke;
+    var intervalID = null;
 
     //Const
-    var btnStyle = 'float: right; border-left: solid 1px rgba(255,255,255,.15); padding-left: 1.25em; margin-left: .5em;';
+    var btnStyle = 'float: right; border-left: solid 1px rgba(255,255,255,.15); border-right: solid 1px rgba(255,255,255,.15); padding-left: 1.25em; padding-right: 1.25em; margin-left:-1px;';
 
 
     //Helpers
@@ -44,25 +45,32 @@ MaS.PoGo.fn = (function () {
             }
             return p;
         }).sort(function (a, b) {
-            var sortType = MaS.PoGo.Settings.tableSort.toLowerCase();
+            var sortType = MaS.PoGo.Settings.sortType.toLowerCase();
 
             if (sortType === "name") {
                 return a.pokemon_name > b.pokemon_name ? 1 : a.pokemon_name < b.pokemon_name ? -1 : 0;
             }
             if (sortType === "cp") {
-                return a.cp > b.cp ? 1 : a.cp < b.cp ? -1 : 0;
+                return a.cp > b.cp ? -1 : a.cp < b.cp ? 1 : 0;
             }
             if (sortType === "lvl") {
-                return a.Lvl > b.Lvl ? 1 : a.Lvlcp < b.Lvl ? -1 : 0;
+                return a.Lvl > b.Lvl ? -1 : a.Lvl < b.Lvl ? 1 : 0;
             }
-            if (sortType === "lvl") {
-                return a.Lvl > b.Lvl ? 1 : a.Lvlcp < b.Lvl ? -1 : 0;
+            if (sortType === "Time") {
+                return a.Time > b.Time ? -1 : a.Time < b.Time ? 1 : 0;
             }
             return a.pokemon_id - b.pokemon_id
         });
     }
 
-    function autoRefresh() {}
+    function autoRefresh() {
+        if (MaS.PoGo.autoRefresh && intervalID !== null) {
+            intervalID = setInterval(showSideBar, 30000);
+        } else if(!MaS.PoGo.autoRefresh) {
+
+        }
+
+    }
 
     function addToasterBtn() {
         $("HEADER#header A#toasterToggle").remove();
@@ -108,8 +116,8 @@ MaS.PoGo.fn = (function () {
         containerDiv.append("<center><h3>Prio Pokemons</h3></center>");
         var settingsDiv = $("<div id='settings' style='padding-left:20px; padding-bottom:10px; margin-top:-15px; border-bottom:1px solid black;'>");
         settingsDiv.append("Auto-reload <input id='autoRefresh' type='checkbox'>")
-        settingsDiv.append("<a href='javascript:' id='reloadData'>Reload data</a> ")
-        settingsDiv.append("<a href='javascript:' id='resetData'>Reset data</butaton> ")
+        settingsDiv.append("| <a href='javascript:' id='reloadData'>Reload data</a> |")
+        settingsDiv.append("<a href='javascript:' id='resetData'>Reset data</a> |")
         settingsDiv.append("<br/>")
         settingsDiv.append("Sort by <select id='sortBy' style='font-size: xx-small;'><option>Nr</option><option>Name</option><option>CP</option><option>Lvl</option><option>Iv</option></select> ");
         settingsDiv.append("Sidebar type: Card <input type='radio' name='sidebarType' value='card'> Table <input type='radio' name='sidebarType' value='table'>");
@@ -120,10 +128,11 @@ MaS.PoGo.fn = (function () {
         }
 
         settingsDiv.find("INPUT#autoRefresh").click(function () {
-            MaS.PoGo.Settings.autorefresh = $(this).prop('checked');
+            MaS.PoGo.Settings.autoRefresh = $(this).prop('checked');
             autoRefresh();
         });
 
+        settingsDiv.find("SELECT#sortBy").val(MaS.PoGo.Settings.sortType);
         settingsDiv.find("SELECT#sortBy").change(function () {
             MaS.PoGo.Settings.sortType = $(this).val();
             showSideBar();
