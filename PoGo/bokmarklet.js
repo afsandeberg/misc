@@ -8,14 +8,20 @@
 
                 // Handle memory leak in IE
                 s.onload = s.onreadystatechange = null;
-                console.log("MasPoGo loaded")
+                toastr.info("MaSPogo loaded")
+                console.log("MaSPoGo loaded")
             }
         }
         document.getElementsByTagName("head")[0].appendChild(s)
     }
     
-    if($("SCRIPT[src*='']").lenght === 0){
+    if($("SCRIPT[src*='maspogo.js']").lenght === 0){
         loadMaSPoGo();
+    }
+    else
+    {
+        toastr.warning("MaSPogo allready loaded")
+        console.log("MaSPogo allready loaded")
     }
 })();
 
