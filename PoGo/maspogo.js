@@ -56,6 +56,9 @@ MaS.PoGo.fn = (function () {
             if (sortType === "lvl") {
                 return a.Lvl > b.Lvl ? -1 : a.Lvl < b.Lvl ? 1 : 0;
             }
+            if (sortType === "Iv") {
+                return a.Iv > b.Iv ? -1 : a.Iv < b.Iv ? 1 : 0;
+            }
             if (sortType === "Time") {
                 return a.Time > b.Time ? -1 : a.Time < b.Time ? 1 : 0;
             }
@@ -64,10 +67,11 @@ MaS.PoGo.fn = (function () {
     }
 
     function autoRefresh() {
-        if (MaS.PoGo.autoRefresh && intervalID !== null) {
-            intervalID = setInterval(showSideBar, 30000);
-        } else if(!MaS.PoGo.autoRefresh) {
-
+        if (MaS.PoGo.autoRefresh && intervalID === null) {
+            intervalID = setInterval(showSideBar, MaS.PoGo.Settings.refreshInterval * 1000);
+        } else if (!MaS.PoGo.autoRefresh && intervalID !== null) {
+            clearInterval(intervalID);
+            intervalID = null;
         }
 
     }
@@ -90,7 +94,7 @@ MaS.PoGo.fn = (function () {
         $("HEADER#header").append(sideBarBtn);
     }
 
-    function addMapRefreshBtn() {}
+    function addMapRefreshBtn() { }
 
 
     //Public
@@ -110,6 +114,7 @@ MaS.PoGo.fn = (function () {
     }
 
     function showSideBar() {
+        //toastr.info("(Re)Loading sidebar...",{progressBar: true, timeOut:1000})        
         loadPokeData();
 
         var containerDiv = $("<div class='gm-style'>");
@@ -119,14 +124,13 @@ MaS.PoGo.fn = (function () {
         settingsDiv.append("| <a href='javascript:' id='reloadData'>Reload data</a> |")
         settingsDiv.append("<a href='javascript:' id='resetData'>Reset data</a> |")
         settingsDiv.append("<br/>")
-        settingsDiv.append("Sort by <select id='sortBy' style='font-size: xx-small;'><option>Nr</option><option>Name</option><option>CP</option><option>Lvl</option><option>Iv</option></select> ");
+        settingsDiv.append("Sort by <select id='sortBy' style='font-size: xx-small;'><option>Nr</option><option>Name</option><option>CP</option><option>Lvl</option><option>Iv</option><option>Time</option></select> ");
         settingsDiv.append("Sidebar type: Card <input type='radio' name='sidebarType' value='card'> Table <input type='radio' name='sidebarType' value='table'>");
 
-        if (MaS.PoGo.Settings.autorefresh) {
+        if (MaS.PoGo.Settings.autoRefresh) {
             settingsDiv.find("INPUT#autoRefresh").prop('checked', true);
             autoRefresh();
-        }
-
+        }   
         settingsDiv.find("INPUT#autoRefresh").click(function () {
             MaS.PoGo.Settings.autoRefresh = $(this).prop('checked');
             autoRefresh();
@@ -156,6 +160,7 @@ MaS.PoGo.fn = (function () {
                 p.marker.animationDisabled = true;
             });
             pokeDiv.find("SPAN.pokemon.links.exclude A").text("Zoom").attr("href", "javascript:")
+            //ToDo Zoom in
 
             pokeDiv.find("SPAN.pokemon.links.remove A").click(function () {
                 pokeDiv.remove();
@@ -189,8 +194,7 @@ MaS.PoGo.fn = (function () {
     return {
         Init: init,
         ShowToaster: showToaster,
-        ShowSideBar: showSideBar,
-        Context: this //Access to private context
+        ShowSideBar: showSideBar
     }
 })();
 
