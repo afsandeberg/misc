@@ -2,7 +2,7 @@
     function loadMaSPoGo() {
 
         var s = document.createElement("script");
-        s.src = "http://code.jquery.com/jquery-3.2.1.min.js";
+        s.src = "https://rawgit.com/afsandeberg/misc/master/PoGo/maspogo.js";
         s.onload = s.onreadystatechange = function (a, b, c) {
             if (!this.readyState || this.readyState == "loaded" || this.readyState == "complete") {
 
@@ -15,7 +15,7 @@
         document.getElementsByTagName("head")[0].appendChild(s)
     }
     
-    if($("SCRIPT[src*='maspogo.js']").lenght === 0){
+    if($("SCRIPT[src*='maspogo.js']").length === 0){
         loadMaSPoGo();
     }
     else
