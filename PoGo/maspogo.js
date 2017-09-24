@@ -204,6 +204,7 @@ MaS.PoGo.fn = (function () {
         //Append settings markup
         containerDiv.append(settingsDiv);
 
+        var dataDiv = $("<div style='padding-left:30px;>")
 
         //Pokes markup
         $.each(notifyPoke, function (i, p) {
@@ -212,13 +213,14 @@ MaS.PoGo.fn = (function () {
             if (!p.hidden) {
 
                 if (MaS.PoGo.Settings.sideBarType === "table") {
-                    var txt = consoleData(p);
-                    var  txt = "<div style:'font-size:xx-small;'><div style='display: inline-block; width: 100px;'>" + txt.replace(/, /g, "</div><div style='display: inline-block; width: 50px;'>") + "</div></div>";
+                    var table = consoleData(p);
+                    var  table = "<div style='font-size:xx-small;'><div style='display: inline-block; width: 100px;'>" + table.replace(/\, /g, "</div><div style='display: inline-block; width: 50px;'>") + "</div></div>";
+                    dataDiv.append(table);
                 }
                 //Card markup
                 else {
 
-                    var pokeDiv = $("<div style='padding-left:50px; padding-top:10px; border-bottom:1px solid black; position:relative;'>");
+                    var pokeDiv = $("<div padding-top:10px; border-bottom:1px solid black; position:relative;'>");
                     pokeDiv.append(pokemonLabel(this));
 
                     //Replace notify action with show action
@@ -244,6 +246,10 @@ MaS.PoGo.fn = (function () {
                     //Add close (remove card) button
                     var closeBtn = $('<div style="width: 13px; height: 13px; overflow: hidden; position: absolute; right: 12px; top: 10px; z-index: 10000; cursor: pointer; opacity: 0.7; font-size:14px;">X</div>');
                     closeBtn.click(function () {
+                        if(intervalID !== null){
+                            clearInterval(intervalID);
+                            intervalID = null;
+                        }
                         pokeDiv.remove();
                     });
                     pokeDiv.append(closeBtn);
