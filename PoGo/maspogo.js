@@ -8,7 +8,7 @@ MaS.PoGo.Settings = {
     showToasterBtn: true,
     showSideBarBtn: true,
     showMapReshBtn: true,
-    showSideBarOnLoad: false,
+    showSideBarOnLoad: true,
     autoRefresh: true,
     refreshInterval: 30, //sec 
     sideBarType: "card", //card or table
@@ -45,12 +45,12 @@ MaS.PoGo.fn = (function () {
         notifyPoke = allPoke.filter(function (p) {
             return isNotifyPoke(p)
         }).map(function (p, k) {
-            p.Lvl = getPokemonLevel(p.cp_multiplier);
+            p.Lvl = parseFloat(getPokemonLevel(p.cp_multiplier));
             p.Time = moment(p.disappear_time).format("HH:mm")
             try {
-                p.Iv = getIv(p.individual_attack, p.individual_defense, p.individual_stamina).toFixed(1);
+                p.Iv = parseFloat(getIv(p.individual_attack, p.individual_defense, p.individual_stamina).toFixed(1));
             } catch (a) {
-                p.Iv = "???";
+                p.Iv = -1;
             }
             return p;
         }).sort(function (a, b) {
@@ -65,23 +65,20 @@ MaS.PoGo.fn = (function () {
             if (sortType === "lvl") {
                 return a.Lvl > b.Lvl ? -1 : a.Lvl < b.Lvl ? 1 : 0;
             }
-            if (sortType === "Iv") {
+            if (sortType === "iv") {
                 return a.Iv > b.Iv ? -1 : a.Iv < b.Iv ? 1 : 0;
             }
-            if (sortType === "Time") {
-                return a.Time > b.Time ? -1 : a.Time < b.Time ? 1 : 0;
+            if (sortType === "time") {
+                return a.disappear_time > b.disappear_time ? -1 : a.disappear_time < b.disappear_time ? 1 : 0;
             }
             return a.pokemon_id - b.pokemon_id
         });
     }
 
     function autoRefresh() {
-        console.log("autoRefresh");
-        if (MaS.PoGo.autoRefresh && intervalID === null) {
-            console.log("a1");
+        if (MaS.PoGo.Settings.autoRefresh && intervalID === null) {
             intervalID = setInterval(showSideBar, MaS.PoGo.Settings.refreshInterval * 1000);
-        } else if (!MaS.PoGo.autoRefresh && intervalID !== null) {
-            console.log("a2");
+        } else if (!MaS.PoGo.Settings.autoRefresh && intervalID !== null) {
             clearInterval(intervalID);
             intervalID = null;
         }
@@ -99,6 +96,12 @@ MaS.PoGo.fn = (function () {
         $.each(pokes, function (i, p) {
             p.hidden = false;
         })
+    }
+
+    function consoleData(poke) {
+        var txt = "Name:" + poke.pokemon_name + ", CP:" + poke.cp + ", Lvl:" + poke.Lvl + ", Iv:" + poke.Iv + "%" + ", Time:" + poke.Time;
+        console.log(txt)
+        return txt;
     }
 
     function addToasterBtn() {
@@ -128,9 +131,8 @@ MaS.PoGo.fn = (function () {
 
         var tostTxt = "<div>";
         $.each(notifyPoke, function (i, p) {
-            var txt = "Name:" + this.pokemon_name + " CP:" + this.cp + " Lvl:" + this.Lvl + " Iv:" + this.Iv + "%" + " Time:" + this.Time;
-            console.log(txt);
-            tostTxt += "<div><div style='display: inline-block; width: 200px;'>" + txt.replace(/ /g, "</div><div style='display: inline-block; width: 100px;'>") + "</div></div>";
+            var txt = consoleData(p);
+            tostTxt += "<div style:'font-size:10px;'><div style='display: inline-block; width: 200px;'>" + txt.replace(/, /g, "</div><div style='display: inline-block; width: 100px;'>") + "</div></div>";
         });
         tostTxt += "</div>"
         toastr.info(tostTxt, "Prio Pokemons", toastOptFull);
@@ -141,8 +143,13 @@ MaS.PoGo.fn = (function () {
         console.log("Load sidebar");
         loadPokeData();
 
+        //Sidebar markup
         var containerDiv = $("<div class='gm-style'>");
+
+        //Header
         containerDiv.append("<center><h3>Prio Pokemons</h3></center>");
+
+        //Settings markup
         var settingsDiv = $("<div id='settings' style='padding-left:20px; padding-bottom:10px; margin-top:-15px; border-bottom:1px solid black;'>");
         settingsDiv.append("Auto-reload <input id='autoRefresh' type='checkbox'> | ")
         settingsDiv.append("<a href='javascript:' id='stopBounce'>Stop bounce</a> | ")
@@ -150,8 +157,9 @@ MaS.PoGo.fn = (function () {
         settingsDiv.append("<a href='javascript:' id='resetData'>Reset data</a> | ")
         settingsDiv.append("<br/>")
         settingsDiv.append("Sort by <select id='sortBy' style='font-size: xx-small;'><option>Nr</option><option>Name</option><option>CP</option><option>Lvl</option><option>Iv</option><option>Time</option></select> ");
-        settingsDiv.append("Sidebar type: Card <input type='radio' name='sidebarType' value='card'> Table <input type='radio' name='sidebarType' value='table'>");
+        settingsDiv.append("Sidebar type: Card <input type='radio' id='sideBarTypeCard' name='sidebarType' value='card'> Table <input type='radio' id='sideBarTypeTable' name='sidebarType' value='table'>");
 
+        //Settings actions
         if (MaS.PoGo.Settings.autoRefresh) {
             settingsDiv.find("INPUT#autoRefresh").prop('checked', true);
             autoRefresh();
@@ -169,7 +177,7 @@ MaS.PoGo.fn = (function () {
         });
 
         settingsDiv.find("A#stopBounce").click(function () {
-           stopBounce(notifyPoke);
+            stopBounce(notifyPoke);
         });
 
         settingsDiv.find("A#reloadData").click(function () {
@@ -183,39 +191,70 @@ MaS.PoGo.fn = (function () {
             initMap();
         });
 
-        containerDiv.append(settingsDiv);
-
-        $.each(notifyPoke, function (i, p) {
-            var txt = "Name:" + this.pokemon_name + " CP:" + this.cp + " Lvl:" + this.Lvl + " Iv:" + this.Iv + "%" + " Time:" + this.Time;
-            console.log(txt);
-
-            var pokeDiv = $("<div style='padding-left:50px; padding-top:10px; border-bottom:1px solid black; position:relative;'>");
-            pokeDiv.append(pokemonLabel(this));
-            pokeDiv.find("SPAN.pokemon.links.notify A").text("Show").attr("href", "javascript:").click(function () {
-                p.marker.infoWindow.open(map, p.marker);
-                clearSelection();
-                updateLabelDiffTime();
-                p.marker.persist = true;
-                p.marker.infoWindowIsOpen = true;
-                p.marker.setAnimation(null);
-                p.marker.animationDisabled = true;
-            });
-            pokeDiv.find("SPAN.pokemon.links.exclude A").text("Zoom").attr("href", "javascript:")
-            //ToDo Zoom in
-
-            pokeDiv.find("SPAN.pokemon.links.remove A").click(function () {
-                pokeDiv.remove();
-            });
-
-            var closeBtn = $('<div style="width: 13px; height: 13px; overflow: hidden; position: absolute; right: 12px; top: 10px; z-index: 10000; cursor: pointer; opacity: 0.7; font-size:14px;">X</div>');
-            closeBtn.click(function () {
-                pokeDiv.remove();
-            });
-
-            pokeDiv.append(closeBtn);
-            containerDiv.append(pokeDiv);
+        if(MaS.PoGo.Settings.sideBarType==="table"){
+            settingsDiv.find('input#sideBarTypeTable').prop("checked", true);
+        }else{
+            settingsDiv.find('input#sideBarTypeCard').prop("checked",true);
+        }
+        settingsDiv.find('input[name=sidebarType]').click(function(){
+            MaS.PoGo.Settings.sideBarType = $(this).val();
+            showSideBar();
         });
 
+        //Append settings markup
+        containerDiv.append(settingsDiv);
+
+
+        //Pokes markup
+        $.each(notifyPoke, function (i, p) {
+
+            //check if poke should be showed
+            if (!p.hidden) {
+
+                if (MaS.PoGo.Settings.sideBarType === "table") {
+                    var txt = consoleData(p);
+                    var  txt = "<div style:'font-size:xx-small;'><div style='display: inline-block; width: 100px;'>" + txt.replace(/, /g, "</div><div style='display: inline-block; width: 50px;'>") + "</div></div>";
+                }
+                //Card markup
+                else {
+
+                    var pokeDiv = $("<div style='padding-left:50px; padding-top:10px; border-bottom:1px solid black; position:relative;'>");
+                    pokeDiv.append(pokemonLabel(this));
+
+                    //Replace notify action with show action
+                    pokeDiv.find("SPAN.pokemon.links.notify A").text("Show").attr("href", "javascript:").click(function () {
+                        p.marker.infoWindow.open(map, p.marker);
+                        clearSelection();
+                        updateLabelDiffTime();
+                        p.marker.persist = true;
+                        p.marker.infoWindowIsOpen = true;
+                        p.marker.setAnimation(null);
+                        p.marker.animationDisabled = true;
+                    });
+
+                    //Replace exclude action with zoom action
+                    pokeDiv.find("SPAN.pokemon.links.exclude A").text("Zoom").attr("href", "javascript:")
+                    //ToDo Zoom in
+
+                    //Append remove card action on regular remove action
+                    pokeDiv.find("SPAN.pokemon.links.remove A").click(function () {
+                        pokeDiv.remove();
+                    });
+
+                    //Add close (remove card) button
+                    var closeBtn = $('<div style="width: 13px; height: 13px; overflow: hidden; position: absolute; right: 12px; top: 10px; z-index: 10000; cursor: pointer; opacity: 0.7; font-size:14px;">X</div>');
+                    closeBtn.click(function () {
+                        pokeDiv.remove();
+                    });
+                    pokeDiv.append(closeBtn);
+
+                    //Add card to sidebar
+                    containerDiv.append(pokeDiv);
+                }
+            }
+        });
+
+        //Empty and add sidebar markup, make it visable and add close action
         $("#gym-details").empty().append(containerDiv).append('<a href="#" class="close" tabindex="0"></a>');
         $("#gym-details").addClass("visible");
         $("#gym-details").on("click", ".close", function () {
