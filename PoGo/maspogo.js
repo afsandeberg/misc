@@ -178,7 +178,6 @@ MaS.PoGo.fn = (function () {
         }
         settingsDiv.find("INPUT#autoRefresh").click(function () {
             MaS.PoGo.Settings.autoRefresh = $(this).prop('checked');
-            console.log("kalle");
             autoRefresh();
         });
 
@@ -216,7 +215,7 @@ MaS.PoGo.fn = (function () {
         //Append settings markup
         containerDiv.append(settingsDiv);
 
-        var dataDiv = $("<div style='padding-left:30px;'>")
+        var dataDiv = $("<div style='padding-left:20px;'>")
 
         //Pokes markup
         $.each(notifyPoke, function (i, p) {
@@ -226,7 +225,7 @@ MaS.PoGo.fn = (function () {
 
                 if (MaS.PoGo.Settings.sideBarType === "table") {
                     var table = consoleData(p);
-                    table = $("<div style='font-size:12px;' id='tableRow'><div style='display: inline-block; width: 110px;'>" + table.replace(/\, /g, "</div><div style='display: inline-block; width: 60px;'>") + "</div></div>");
+                    table = $("<div style='font-size:12px;' id='tableRow'><div style='display: inline-block; width: 100px;'>" + table.replace(/\, /g, "</div><div style='display: inline-block; width: 60px;'>") + "</div></div>");
                     table.click(function(){
                         showMarker(p);
                     });
