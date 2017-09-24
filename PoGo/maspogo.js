@@ -22,7 +22,8 @@ MaS.PoGo.fn = (function () {
 
     //Const
     var btnStyle = 'float: right; border-left: solid 1px rgba(255,255,255,.15); border-right: solid 1px rgba(255,255,255,.15); padding-left: 1.25em; padding-right: 1.25em; margin-left:-1px;';
-
+    toastOptFull = {positionClass: "toast-top-full-width",  progressBar:true, closeButton: true};
+    toastOptBotRig = {positionClass: "toast-bottom-right", progressBar:true, closeButton: true}
 
     //Helpers
     function loadPokeData() {
@@ -67,6 +68,7 @@ MaS.PoGo.fn = (function () {
     }
 
     function autoRefresh() {
+        console.log("autoRefresh");
         if (MaS.PoGo.autoRefresh && intervalID === null) {
             intervalID = setInterval(showSideBar, MaS.PoGo.Settings.refreshInterval * 1000);
         } else if (!MaS.PoGo.autoRefresh && intervalID !== null) {
@@ -74,6 +76,18 @@ MaS.PoGo.fn = (function () {
             intervalID = null;
         }
 
+    }
+
+    function stopBounce(pokes) {
+        $.each(pokes, function (i, p) {
+
+        })
+    }
+
+    function unHide(pokes) {
+        $.each(pokes, function (i, p) {
+
+        })
     }
 
     function addToasterBtn() {
@@ -108,9 +122,7 @@ MaS.PoGo.fn = (function () {
             tostTxt += "<div><div style='display: inline-block; width: 200px;'>" + txt.replace(/ /g, "</div><div style='display: inline-block; width: 100px;'>") + "</div></div>";
         });
         tostTxt += "</div>"
-        toastr.info(tostTxt, "Prio Pokemons", {
-            "positionClass": "toast-top-full-width"
-        });
+        toastr.info(tostTxt, "Prio Pokemons", toastOptFull);
     }
 
     function showSideBar() {
@@ -130,7 +142,7 @@ MaS.PoGo.fn = (function () {
         if (MaS.PoGo.Settings.autoRefresh) {
             settingsDiv.find("INPUT#autoRefresh").prop('checked', true);
             autoRefresh();
-        }   
+        }
         settingsDiv.find("INPUT#autoRefresh").click(function () {
             MaS.PoGo.Settings.autoRefresh = $(this).prop('checked');
             autoRefresh();
