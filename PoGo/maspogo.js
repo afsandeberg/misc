@@ -22,8 +22,16 @@ MaS.PoGo.fn = (function () {
 
     //Const
     var btnStyle = 'float: right; border-left: solid 1px rgba(255,255,255,.15); border-right: solid 1px rgba(255,255,255,.15); padding-left: 1.25em; padding-right: 1.25em; margin-left:-1px;';
-    toastOptFull = {positionClass: "toast-top-full-width",  progressBar:true, closeButton: true};
-    toastOptBotRig = {positionClass: "toast-bottom-right", progressBar:true, closeButton: true}
+    var toastOptFull = {
+        positionClass: "toast-top-full-width",
+        progressBar: true,
+        closeButton: true
+    };
+    var toastOptBotRig = {
+        positionClass: "toast-bottom-right",
+        progressBar: true,
+        closeButton: true
+    }
 
     //Helpers
     function loadPokeData() {
@@ -70,8 +78,10 @@ MaS.PoGo.fn = (function () {
     function autoRefresh() {
         console.log("autoRefresh");
         if (MaS.PoGo.autoRefresh && intervalID === null) {
+            console.log("a1");
             intervalID = setInterval(showSideBar, MaS.PoGo.Settings.refreshInterval * 1000);
         } else if (!MaS.PoGo.autoRefresh && intervalID !== null) {
+            console.log("a2");
             clearInterval(intervalID);
             intervalID = null;
         }
@@ -80,13 +90,14 @@ MaS.PoGo.fn = (function () {
 
     function stopBounce(pokes) {
         $.each(pokes, function (i, p) {
-
+            p.marker.setAnimation(null);
+            p.marker.animationDisabled = true;
         })
     }
 
     function unHide(pokes) {
         $.each(pokes, function (i, p) {
-
+            p.hidden = false;
         })
     }
 
@@ -108,7 +119,7 @@ MaS.PoGo.fn = (function () {
         $("HEADER#header").append(sideBarBtn);
     }
 
-    function addMapRefreshBtn() { }
+    function addMapRefreshBtn() {}
 
 
     //Public
@@ -126,15 +137,17 @@ MaS.PoGo.fn = (function () {
     }
 
     function showSideBar() {
-        //toastr.info("(Re)Loading sidebar...",{progressBar: true, timeOut:1000})        
+        //toastr.info("(Re)Loading sidebar...",{progressBar: true, timeOut:1000})  
+        console.log("Load sidebar");
         loadPokeData();
 
         var containerDiv = $("<div class='gm-style'>");
         containerDiv.append("<center><h3>Prio Pokemons</h3></center>");
         var settingsDiv = $("<div id='settings' style='padding-left:20px; padding-bottom:10px; margin-top:-15px; border-bottom:1px solid black;'>");
-        settingsDiv.append("Auto-reload <input id='autoRefresh' type='checkbox'>")
-        settingsDiv.append("| <a href='javascript:' id='reloadData'>Reload data</a> |")
-        settingsDiv.append("<a href='javascript:' id='resetData'>Reset data</a> |")
+        settingsDiv.append("Auto-reload <input id='autoRefresh' type='checkbox'> | ")
+        settingsDiv.append("<a href='javascript:' id='stopBounce'>Stop bounce</a> | ")
+        settingsDiv.append("<a href='javascript:' id='reloadData'>Reload data</a> | ")
+        settingsDiv.append("<a href='javascript:' id='resetData'>Reset data</a> | ")
         settingsDiv.append("<br/>")
         settingsDiv.append("Sort by <select id='sortBy' style='font-size: xx-small;'><option>Nr</option><option>Name</option><option>CP</option><option>Lvl</option><option>Iv</option><option>Time</option></select> ");
         settingsDiv.append("Sidebar type: Card <input type='radio' name='sidebarType' value='card'> Table <input type='radio' name='sidebarType' value='table'>");
@@ -145,6 +158,7 @@ MaS.PoGo.fn = (function () {
         }
         settingsDiv.find("INPUT#autoRefresh").click(function () {
             MaS.PoGo.Settings.autoRefresh = $(this).prop('checked');
+            console.log("kalle");
             autoRefresh();
         });
 
@@ -152,6 +166,21 @@ MaS.PoGo.fn = (function () {
         settingsDiv.find("SELECT#sortBy").change(function () {
             MaS.PoGo.Settings.sortType = $(this).val();
             showSideBar();
+        });
+
+        settingsDiv.find("A#stopBounce").click(function () {
+           stopBounce(notifyPoke);
+        });
+
+        settingsDiv.find("A#reloadData").click(function () {
+            toastr.info("Reloading map...", "", toastOptBotRig);
+            updateMap();
+        });
+
+        settingsDiv.find("A#resetData").click(function () {
+            toastr.info("Reseting data...", "", toastOptBotRig);
+            unHide(notifyPoke);
+            initMap();
         });
 
         containerDiv.append(settingsDiv);
