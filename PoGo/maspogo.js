@@ -169,7 +169,7 @@ MaS.PoGo.fn = (function () {
         settingsDiv.append("<br/>");
         settingsDiv.append("Sort by <select id='sortBy' style='font-size: xx-small;'><option>Nr</option><option>Name</option><option>CP</option><option>Lvl</option><option>Iv</option><option>Time</option></select> ");
         settingsDiv.append("Sidebar type: Card <input style='font-size:2px;' type='radio' id='sideBarTypeCard' name='sidebarType' value='card'> Table <input type='radio' id='sideBarTypeTable' name='sidebarType' value='table'>");
-        settingsDiv.append("<span style='font-size:9px; padding-left:30px;'>Reload: " + moment(moment.now()).format("YYYY-MM-DD HH:mm:ss") + "</span>");
+        settingsDiv.append("<span style='font-size:9px; padding-left:25px;'>" + moment(moment.now()).format("HH:mm:ss") + "</span>");
 
         //Settings actions
         if (MaS.PoGo.Settings.autoRefresh) {
@@ -225,7 +225,7 @@ MaS.PoGo.fn = (function () {
 
                 if (MaS.PoGo.Settings.sideBarType === "table") {
                     var table = consoleData(p);
-                    table = $("<div style='font-size:12px;' id='tableRow'><div style='display: inline-block; width: 100px;'>" + table.replace(/\, /g, "</div><div style='display: inline-block; width: 60px;'>") + "</div></div>");
+                    table = $("<div style='font-size:12px;' id='tableRow'><div style='display: inline-block; width: 100px;'>" + table.replace(/\, /g, "</div><div style='display: inline-block; width: 55px;'>") + "</div></div>");
                     table.click(function(){
                         showMarker(p);
                     });
@@ -272,6 +272,7 @@ MaS.PoGo.fn = (function () {
         //Empty and add sidebar markup, make it visable and add close action
         $("#gym-details").empty().append(containerDiv).append('<a href="#" class="close" tabindex="0"></a>');
         $("#gym-details").addClass("visible");
+        $("#gym-details").attr("style", "width:360px;")
         $("#gym-details").on("click", ".close", function () {
             if(intervalID !== null){
                 clearInterval(intervalID);
