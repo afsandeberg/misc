@@ -11,9 +11,78 @@ MaS.PoGo.Settings = {
     showSideBarOnLoad: true,
     autoRefresh: true,
     refreshInterval: 30, //sec 
-    sideBarType: "card", //card or table
-    sortType: "Nr" //Prop to sort table view by
+    sideBarType: "table", //card or table
+    sortType: "Lvl" //Prop to sort view by
 };
+
+MaS.PoGo.Style = (function () {/*
+    <style>
+        .btnStyle{
+            float: right; 
+            border-left: solid 1px rgba(255,255,255,.15); 
+            border-right: solid 1px rgba(255,255,255,.15); 
+            padding-left: 1.25em; 
+            padding-right: 1.25em; 
+            margin-left:-1px;
+        }
+        .toasterContainer{
+            font-size:12px;
+        }
+        .toasterRow > DIV{
+            display: inline-block; 
+            width: 100px;
+        }
+        .toasterRow > DIV:first-child{
+            width: 200px;
+        }
+        .settingsContainer{
+            padding-left:20px;
+            padding-bottom:5px;
+            margin-top:-15px;
+            margin-bottom:5px;
+            border-bottom:1px solid black;
+        }
+        .settingsContainer SELECT{
+            font-size: xx-small;
+        }
+        .smallTime
+        {
+            font-size:9px;
+        }
+        .pokeData{
+            padding-left:20px;
+        }
+        #tableRow{
+            font-size:12px;
+        }
+        #tableRow > DIV{
+            display: inline-block;
+            width: 55px;
+        }
+        #tableRow > DIV:first-child{
+             width: 100px;
+        }
+        .pokeCard{
+            padding-left:50px;
+            margin-left:-30px;
+            padding-top:10px;
+            border-bottom:1px solid black;
+            position:relative;
+        }
+        .pokeCardClose{
+            width: 13px;
+            height: 13px;
+            overflow: hidden;
+            position: absolute;
+            right: 12px;
+            top: 10px;
+            z-index: 10000;
+            cursor: pointer;
+            opacity: 0.7;
+            font-size:14px;
+        }
+    </style>     
+ */}).toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1];
 
 MaS.PoGo.fn = (function () {
     var allPoke;
@@ -21,16 +90,15 @@ MaS.PoGo.fn = (function () {
     var intervalID = null;
 
     //Const
-    var btnStyle = 'float: right; border-left: solid 1px rgba(255,255,255,.15); border-right: solid 1px rgba(255,255,255,.15); padding-left: 1.25em; padding-right: 1.25em; margin-left:-1px;';
-    var toastOptFull = {
+        var toastOptFull = {
         positionClass: "toast-top-full-width",
         progressBar: true,
-        closeButton: true
+        closeButton: false
     };
     var toastOptBotRig = {
         positionClass: "toast-bottom-right",
         progressBar: true,
-        closeButton: true
+        closeButton: false
     }
 
     //Helpers
@@ -116,7 +184,7 @@ MaS.PoGo.fn = (function () {
 
     function addToasterBtn() {
         $("HEADER#header A#toasterToggle").remove();
-        var toasterBtn = $('<a href="javascript:" id="toasterToggle" class="statsNav" style="' + btnStyle + '"><span class="label">Toast</span></a>');
+        var toasterBtn = $('<a href="javascript:" id="toasterToggle" class="statsNav btnStyle"><span class="label">Toast</span></a>');
         toasterBtn.click(function () {
             showToaster();
         });
@@ -125,7 +193,7 @@ MaS.PoGo.fn = (function () {
 
     function addSideBarBtn() {
         $("HEADER#header A#sideBarToggle").remove();
-        var sideBarBtn = $('<a href="javascript:" id="sideBarToggle" class="statsNav" style="' + btnStyle + '"><span class="label">SideBar</span></a>');
+        var sideBarBtn = $('<a href="javascript:" id="sideBarToggle" class="statsNav btnStyle"><span class="label">SideBar</span></a>');
         sideBarBtn.click(function () {
             showSideBar();
         });
@@ -140,10 +208,10 @@ MaS.PoGo.fn = (function () {
         //console.log("Load toaster");
         loadPokeData();
 
-        var tostTxt = "<div>";
+        var tostTxt = "<div class='toasterContainer'>";
         $.each(notifyPoke, function (i, p) {
             var txt = consoleData(p);
-            tostTxt += "<div style='font-size:12px;'><div style='display: inline-block; width: 200px;'>" + txt.replace(/, /g, "</div><div style='display: inline-block; width: 100px;'>") + "</div></div>";
+            tostTxt += "<div class='toasterRow'><div>" + txt.replace(/, /g, "</div><div>") + "</div></div>";
         });
         tostTxt += "</div>"
         toastr.info(tostTxt, "Prio Pokemons", toastOptFull);
@@ -161,15 +229,17 @@ MaS.PoGo.fn = (function () {
         containerDiv.append("<center><h3>Prio Pokemons</h3></center>");
 
         //Settings markup
-        var settingsDiv = $("<div id='settings' style='padding-left:20px; padding-bottom:5px; margin-top:-15px; margin-bottom:5px; border-bottom:1px solid black;'>");
+        var settingsDiv = $("<div id='settings' class='settingsContainer'>");
         settingsDiv.append("Auto-reload <input id='autoRefresh' type='checkbox'> | ")
         settingsDiv.append("<a href='javascript:' id='stopBounce'>Stop bounce</a> | ")
         settingsDiv.append("<a href='javascript:' id='reloadData'>Reload map</a> | ")
         settingsDiv.append("<a href='javascript:' id='resetData'>Reset map</a> | ")
+        settingsDiv.append("<span class='smallTime'>" + moment(moment.now()).format("HH:mm:ss") + "</span>");
         settingsDiv.append("<br/>");
-        settingsDiv.append("Sort by <select id='sortBy' style='font-size: xx-small;'><option>Nr</option><option>Name</option><option>CP</option><option>Lvl</option><option>Iv</option><option>Time</option></select> ");
-        settingsDiv.append("Sidebar type: Card <input style='font-size:2px;' type='radio' id='sideBarTypeCard' name='sidebarType' value='card'> Table <input type='radio' id='sideBarTypeTable' name='sidebarType' value='table'>");
-        settingsDiv.append("<span style='font-size:9px; padding-left:25px;'>" + moment(moment.now()).format("HH:mm:ss") + "</span>");
+        settingsDiv.append("Sort by <select id='sortBy'><option>Nr</option><option>Name</option><option>CP</option><option>Lvl</option><option>Iv</option><option>Time</option></select> ");
+        settingsDiv.append("Sidebar type: Card<input type='radio' id='sideBarTypeCard' name='sidebarType' value='card'> ");
+        settingsDiv.append("Table<input type='radio' id='sideBarTypeTable' name='sidebarType' value='table'> ");
+        settingsDiv.append("Settings<input type='radio' id='sideBarTypeSettings' name='sidebarType' value='settings'>");
 
         //Settings actions
         if (MaS.PoGo.Settings.autoRefresh) {
@@ -215,7 +285,7 @@ MaS.PoGo.fn = (function () {
         //Append settings markup
         containerDiv.append(settingsDiv);
 
-        var dataDiv = $("<div style='padding-left:20px;'>")
+        var dataDiv = $("<div class='pokeData'>")
 
         //Pokes markup
         $.each(notifyPoke, function (i, p) {
@@ -225,7 +295,7 @@ MaS.PoGo.fn = (function () {
 
                 if (MaS.PoGo.Settings.sideBarType === "table") {
                     var table = consoleData(p);
-                    table = $("<div style='font-size:12px;' id='tableRow'><div style='display: inline-block; width: 100px;'>" + table.replace(/\, /g, "</div><div style='display: inline-block; width: 55px;'>") + "</div></div>");
+                    table = $("<div id='tableRow'><div>" + table.replace(/\, /g, "</div><div>") + "</div></div>");
                     table.click(function(){
                         showMarker(p);
                     });
@@ -235,7 +305,7 @@ MaS.PoGo.fn = (function () {
                 //Card markup
                 else {
 
-                    var pokeDiv = $("<div style='padding-left:50px; margin-left:-30px; padding-top:10px; border-bottom:1px solid black; position:relative;'>");
+                    var pokeDiv = $("<div class='pokeCard'>");
                     pokeDiv.append(pokemonLabel(this));
 
                     //Replace notify action with show action
@@ -255,7 +325,7 @@ MaS.PoGo.fn = (function () {
                     });
 
                     //Add close (remove card) button
-                    var closeBtn = $('<div style="width: 13px; height: 13px; overflow: hidden; position: absolute; right: 12px; top: 10px; z-index: 10000; cursor: pointer; opacity: 0.7; font-size:14px;">X</div>');
+                    var closeBtn = $('<div class="pokeCardClose">X</div>');
                     closeBtn.click(function () {
                         pokeDiv.remove();
                     });
@@ -289,6 +359,7 @@ MaS.PoGo.fn = (function () {
         if (MaS.PoGo.Settings.showSideBarBtn) addSideBarBtn();
         if (MaS.PoGo.Settings.showMapReshBtn) addMapRefreshBtn();
         if (MaS.PoGo.Settings.showSideBarOnLoad) showSideBar();
+        $("HEAD").append(MaS.PoGo.Style);
     }
 
 
