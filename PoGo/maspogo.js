@@ -84,13 +84,14 @@ MaS.PoGo.Style = (function () {/*
     </style>     
  */}).toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1];
 
+
 MaS.PoGo.fn = (function () {
     var allPoke;
     var notifyPoke;
     var intervalID = null;
 
     //Const
-        var toastOptFull = {
+    var toastOptFull = {
         positionClass: "toast-top-full-width",
         progressBar: true,
         closeButton: false
@@ -172,14 +173,20 @@ MaS.PoGo.fn = (function () {
         return txt;
     }
 
-    function showMarker(p){
-        p.marker.infoWindow.open(map, p.marker);
-        clearSelection();
-        updateLabelDiffTime();
-        p.marker.persist = true;
-        p.marker.infoWindowIsOpen = true;
-        p.marker.setAnimation(null);
-        p.marker.animationDisabled = true;
+    function toggleMarker(p) {
+        if (p.marker.infoWindowIsOpen) {
+            p.marker.persist = false;
+            p.marker.infoWindow.close();
+            p.marker.infoWindowIsOpen = false;
+        } else {
+            p.marker.infoWindow.open(map, p.marker);
+            clearSelection();
+            updateLabelDiffTime();
+            p.marker.persist = true;
+            p.marker.infoWindowIsOpen = true;
+            p.marker.setAnimation(null);
+            p.marker.animationDisabled = true;
+        }
     }
 
     function addToasterBtn() {
@@ -200,7 +207,7 @@ MaS.PoGo.fn = (function () {
         $("HEADER#header").append(sideBarBtn);
     }
 
-    function addMapRefreshBtn() {}
+    function addMapRefreshBtn() { }
 
 
     //Public
@@ -239,7 +246,7 @@ MaS.PoGo.fn = (function () {
         settingsDiv.append("Sort by <select id='sortBy'><option>Nr</option><option>Name</option><option>CP</option><option>Lvl</option><option>Iv</option><option>Time</option></select> ");
         settingsDiv.append("Sidebar type: Card<input type='radio' id='sideBarTypeCard' name='sidebarType' value='card'> ");
         settingsDiv.append("Table<input type='radio' id='sideBarTypeTable' name='sidebarType' value='table'> ");
-        settingsDiv.append("Settings<input type='radio' id='sideBarTypeSettings' name='sidebarType' value='settings'>");
+        settingsDiv.append("Quick<input type='radio' id='sideBarTypeQuick' name='sidebarType' value='quick'>");
 
         //Settings actions
         if (MaS.PoGo.Settings.autoRefresh) {
@@ -272,12 +279,15 @@ MaS.PoGo.fn = (function () {
             initMap();
         });
 
-        if(MaS.PoGo.Settings.sideBarType==="table"){
+        if (MaS.PoGo.Settings.sideBarType === "table") {
             settingsDiv.find('input#sideBarTypeTable').prop("checked", true);
-        }else{
-            settingsDiv.find('input#sideBarTypeCard').prop("checked",true);
+        } else if (MaS.PoGo.Settings.sideBarType === "quick") {
+            settingsDiv.find('input#sideBarTypeQuick').prop("checked", true);
         }
-        settingsDiv.find('input[name=sidebarType]').click(function(){
+        else {
+            settingsDiv.find('input#sideBarTypeCard').prop("checked", true);
+        }
+        settingsDiv.find('input[name=sidebarType]').click(function () {
             MaS.PoGo.Settings.sideBarType = $(this).val();
             showSideBar();
         });
@@ -293,14 +303,19 @@ MaS.PoGo.fn = (function () {
             //check if poke should be showed
             if (!p.hidden) {
 
+                //Table markup
                 if (MaS.PoGo.Settings.sideBarType === "table") {
                     var table = consoleData(p);
                     table = $("<div id='tableRow'><div>" + table.replace(/\, /g, "</div><div>") + "</div></div>");
-                    table.click(function(){
-                        showMarker(p);
+                    table.click(function () {
+                        toggleMarker(p);
                     });
                     dataDiv.append(table);
 
+                }
+                //Quick markup
+                else if (MaS.PoGo.Settings.sideBarType === "quick") {
+                    dataDiv.append("<div class='quickStuff'><div>Show only<div>")
                 }
                 //Card markup
                 else {
@@ -310,13 +325,13 @@ MaS.PoGo.fn = (function () {
 
                     //Replace notify action with show action
                     pokeDiv.find("SPAN.pokemon.links.notify A").text("Show").attr("href", "javascript:").click(function () {
-                        showMarker(p);
+                        toggleMarker(p);
                     });
 
                     //Replace exclude action with zoom action
                     pokeDiv.find("SPAN.pokemon.links.exclude A").text("Zoom").attr("href", "javascript:").click(function () {
-                        centerMap(p.latitude,p.longitude,14);
-                        showMarker(p);
+                        centerMap(p.latitude, p.longitude, 14);
+                        toggleMarker(p);
                     });
 
                     //Append remove card action on regular remove action
@@ -344,7 +359,7 @@ MaS.PoGo.fn = (function () {
         $("#gym-details").addClass("visible");
         $("#gym-details").attr("style", "width:360px;")
         $("#gym-details").on("click", ".close", function () {
-            if(intervalID !== null){
+            if (intervalID !== null) {
                 clearInterval(intervalID);
                 intervalID = null;
             }
