@@ -303,7 +303,7 @@ MaS.PoGo.fn = (function () {
         if(excludeSet.length < 1){
             excludeSet =  mpStore.auto.filter(function(a){return a.name.toLowerCase() === name;});
         }
-        if(excludeSet.length < 1){
+        if(excludeSet.length > 0){
             $selectExclude.val(excludeSet[0].excludedPoke).change();
             refreshMap();
         }else{
