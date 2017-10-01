@@ -273,7 +273,7 @@ MaS.PoGo.fn = (function () {
 
     function applyExcludePokeSet(name){
         name = name.toLowerCase();
-        if(name === "deafult"){
+        if(name === "default"){
             $selectExclude.val(StoreOptions.remember_select_exclude.default.filter(function(a){ return a !== 74; })).change();
             refreshMap();
             return;
@@ -497,8 +497,7 @@ MaS.PoGo.fn = (function () {
                     var box = $(this);
                     showOnlySettings[box.val()] = box.prop("checked");
                 });
-                MaS.PoGo.Settings.showOnlySettings["custom"] = showOnly.find("INPUT[type=text]").val();
-
+                showOnlySettings["custom"] = showOnly.find("INPUT[type=text]").val();
                 MaS.PoGo.Settings.showOnlySettings = showOnlySettings;
                 showSideBar();
             });
@@ -608,7 +607,7 @@ MaS.PoGo.fn = (function () {
         containerDiv.append(dataDiv);
 
         //Empty and add sidebar markup, make it visable and add close action
-        $("#gym-details").empty().append(containerDiv).append('<a href="#" class="close" style="line-height: inherit; padding-right: 5px;" tabindex="0"></a>');
+        $("#gym-details").empty().append(containerDiv).append('<a href="#" class="close" style="line-height: inherit; padding-right: 5px; width:auto; height:auto;" tabindex="0"></a>');
         $("#gym-details").addClass("visible");
         $("#gym-details").attr("style", "width:360px;")
         $("#gym-details").on("click", ".close", function () {
