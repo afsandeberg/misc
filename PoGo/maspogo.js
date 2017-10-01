@@ -9,86 +9,126 @@ MaS.PoGo.Settings = {
     showSideBarBtn: true,
     showMapReshBtn: true,
     showSideBarOnLoad: true,
-    autoRefresh: true,
-    refreshInterval: 30, //sec 
-    sideBarType: "table", //card or table
-    sortType: "Lvl" //Prop to sort view by
+    autoRefresh: false,
+    refreshInterval: 15, //sec 
+    sideBarType: "quick", //card or table
+    sortType: "Lvl", //Prop to sort view by
+    localStorageKey: "MaSPoGo",
+    highValuePokeSet: [7,8,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,60,61,62,69,70,71,72,73,77,78,79,80,81,82,84,85,86,87,88,90,91,92,93,95,96,97,98,99,100,101,104,105,106,107,108,109,110,116,117,118,119,120,121,122,123,124,125,126,137,138,139,140,141,142,152,153,158,159,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,198,199,200,202,203,204,205,206,207,208,209,210,211,212,213,215,216,218,219,220,221,223,224,226,227,228,229,230,231,233,234,236,237,238,239,240,241],
+    mediumValuePokeSet: [10,11,12,13,14,16,17,19,20,21,22,29,32,33,35,41,43,46,48,50,54,55,60,61,69,72,77,79,81,90,96,98,100,116,118,120,122,161,162,163,164,165,166,167,177,178,183,190,194,198,202,215,218,220,223],
+    showOnlySettings: {}
 };
 
 MaS.PoGo.Style = (function () {/*
-    <style>
-        .btnStyle{
-            float: right; 
-            border-left: solid 1px rgba(255,255,255,.15); 
-            border-right: solid 1px rgba(255,255,255,.15); 
-            padding-left: 1.25em; 
-            padding-right: 1.25em; 
-            margin-left:-1px;
-        }
-        .toasterContainer{
-            font-size:12px;
-        }
-        .toasterRow > DIV{
-            display: inline-block; 
-            width: 100px;
-        }
-        .toasterRow > DIV:first-child{
-            width: 200px;
-        }
-        .settingsContainer{
-            padding-left:20px;
-            padding-bottom:5px;
-            margin-top:-15px;
-            margin-bottom:5px;
-            border-bottom:1px solid black;
-        }
-        .settingsContainer SELECT{
-            font-size: xx-small;
-        }
-        .smallTime
-        {
-            font-size:9px;
-        }
-        .pokeData{
-            padding-left:20px;
-        }
-        #tableRow{
-            font-size:12px;
-        }
-        #tableRow > DIV{
-            display: inline-block;
-            width: 55px;
-        }
-        #tableRow > DIV:first-child{
-             width: 100px;
-        }
-        .pokeCard{
-            padding-left:50px;
-            margin-left:-30px;
-            padding-top:10px;
-            border-bottom:1px solid black;
-            position:relative;
-        }
-        .pokeCardClose{
-            width: 13px;
-            height: 13px;
-            overflow: hidden;
-            position: absolute;
-            right: 12px;
-            top: 10px;
-            z-index: 10000;
-            cursor: pointer;
-            opacity: 0.7;
-            font-size:14px;
-        }
-    </style>     
- */}).toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1];
+            <style>
+                .btnStyle{
+                    float: right; 
+                    border-left: solid 1px rgba(255,255,255,.15); 
+                    border-right: solid 1px rgba(255,255,255,.15); 
+                    padding-left: 1.25em; 
+                    padding-right: 1.25em; 
+                    margin-left:-1px;
+                }
+                .toasterContainer{
+                    font-size:12px;
+                }
+                .toasterRow > DIV{
+                    display: inline-block; 
+                    width: 100px;
+                }
+                .toasterRow > DIV:first-child{
+                    width: 200px;
+                }
+                .settingsContainer{
+                    padding-left:20px;
+                    padding-bottom:5px;
+                    margin-top:-15px;
+                    margin-bottom:5px;
+                    border-bottom:1px solid black;
+                }
+                .settingsContainer SELECT{
+                    font-size: xx-small;
+                }
+                .smallTime
+                {
+                    font-size:9px;
+                }
+                .pokeData{
+                    padding-left:20px;
+                    xpadding-right:10px;
+                }
+                #tableRow{
+                    font-size:12px;
+                }
+                #tableRow:hover{
+                    background-color:#dddddd;
+                }
+                #tableRow > DIV{
+                    display: inline-block;
+                    width: 55px;
+                }
+                #tableRow > DIV:first-child{
+                     width: 100px;
+                }
+                .pokeCard{
+                    padding-left:50px;
+                    margin-left:-30px;
+                    padding-top:10px;
+                    border-bottom:1px solid black;
+                    position:relative;
+                }
+                .pokeCardClose{
+                    width: 13px;
+                    height: 13px;
+                    overflow: hidden;
+                    position: absolute;
+                    right: 12px;
+                    top: 10px;
+                    z-index: 10000;
+                    cursor: pointer;
+                    opacity: 0.7;
+                    font-size:14px;
+                }
+                .quickShowOnly LABEL{
+                    display:inline-block;
+                    width:100px;
+                }
+                .quickShowOnly LABEL:last-child{
+                    padding-top:10px;
+                }
+                .quickShowOnly INPUT[type=text]{
+                    font-size:9px; 
+                    width:300px;
+                }
+                .quickShowSaved{
+                    padding-top:15px;
+                }
+                .quickShowSaved .h1{
+                    font-size:10px;
+                    font-weight: bold;
+                }
+                .quickShowSaved .h2{
+                    font-size:10px;
+                }
+                .quickShowSaved>DIV DIV{
+                    display:inline-block;
+                    margin-left:10px;
+                }
+                .quickShowSaved>DIV DIV:first-child{
+                    
+                    width: 120px;
+                }
+            </style>     
+         */}).toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1];
 
 
 MaS.PoGo.fn = (function () {
     var allPoke;
     var notifyPoke;
     var intervalID = null;
+    var allPokeData = $.map(idToPokemon, function(a,b){a.id = b; return a;})
+    var allPokeNumbers = (function () {var all = [];for (var i = 1; i <= 248; i++) {all.push(i);}return all;})(); //all Poke numbers upp to Lugia
+    var that = this;
 
     //Const
     var toastOptFull = {
@@ -207,7 +247,84 @@ MaS.PoGo.fn = (function () {
         $("HEADER#header").append(sideBarBtn);
     }
 
-    function addMapRefreshBtn() { }
+    function saveCurrentExcludePoke(name){
+        var mpStore = JSON.parse(localStorage.getItem(MaS.PoGo.Settings.localStorageKey) || '{"auto":[], "manual":[]}');
+
+        if(typeof name === "undefined"){ 
+            name = "auto-" + (new Date()).getTime(); 
+            if(mpStore.auto.length > 10){
+                mpStore.auto.pop();
+            }
+            mpStore.auto.unshift({"name": name, "excludedPoke": excludedPokemon})
+        }else
+        {
+            mpStore.manual.unshift({"name": name, "excludedPoke": excludedPokemon})
+        }
+
+        localStorage.setItem(MaS.PoGo.Settings.localStorageKey,JSON.stringify(mpStore));
+    }
+
+    function removeExcludePokeSet(name){
+        var mpStore = JSON.parse(localStorage.getItem(MaS.PoGo.Settings.localStorageKey) || '{"auto":[], "manual":[]}');
+        mpStore.manual = mpStore.manual.filter(function(a){return a.name.toLowerCase() !== name.toLowerCase();});
+        mpStore.auto = mpStore.auto.filter(function(a){return a.name.toLowerCase() !== name.toLowerCase();});
+        localStorage.setItem(MaS.PoGo.Settings.localStorageKey,JSON.stringify(mpStore));
+    }
+
+    function applyExcludePokeSet(name){
+        name = name.toLowerCase();
+        if(name === "deafult"){
+            $selectExclude.val(StoreOptions.remember_select_exclude.default.filter(function(a){ return a !== 74; })).change();
+            refreshMap();
+            return;
+        }
+        if(name === "no"){
+            $selectExclude.val([]).change();
+            refreshMap();
+            return;
+        }
+        if(name === "high"){
+            $selectExclude.val(MaS.PoGo.Settings.highValuePokeSet).change();
+            refreshMap();
+            return;
+        }
+        if(name === "medium"){
+            $selectExclude.val(MaS.PoGo.Settings.mediumValuePokeSet).change();
+            refreshMap();
+            return;
+        }
+
+
+        var mpStore = JSON.parse(localStorage.getItem(MaS.PoGo.Settings.localStorageKey) || '{"auto":[], "manual":[]}');
+        var excludeSet =  mpStore.manual.filter(function(a){return a.name.toLowerCase() === name;});
+        if(excludeSet.length < 1){
+            excludeSet =  mpStore.auto.filter(function(a){return a.name.toLowerCase() === name;});
+        }
+        if(excludeSet.length < 1){
+            $selectExclude.val(excludeSet[0].excludedPoke).change();
+            refreshMap();
+        }else{
+            console.log("Error-applyExcludePokeSet: no saved exclude set with name " + name + " found");
+        }
+    }
+
+    function reapplyLastSavedExcludePoke() {
+        var mpStore = JSON.parse(localStorage.getItem(MaS.PoGo.Settings.localStorageKey) || '{"auto":[], "manual":[]}');
+        if(mpStore.auto.length > 0){
+            $selectExclude.val(mpStore.auto.slice(-1)[0].excludedPoke).change();
+            refreshMap();
+        }
+        else{
+            console.log("Error-reaplyLastSavedExcludePoke: no saved exclude set")
+        }
+    }
+
+    function refreshMap()    {
+        updateMap();
+        redrawPokemon(mapData.pokemons);
+        redrawPokemon(mapData.lurePokemons);
+        markerCluster.repaint();
+    }
 
 
     //Public
@@ -270,21 +387,20 @@ MaS.PoGo.fn = (function () {
 
         settingsDiv.find("A#reloadData").click(function () {
             toastr.info("Reloading map...", "", toastOptBotRig);
-            updateMap();
+            refreshMap();
         });
 
         settingsDiv.find("A#resetData").click(function () {
             toastr.info("Reseting data...", "", toastOptBotRig);
             unHide(notifyPoke);
-            initMap();
+            refreshMap();
         });
 
         if (MaS.PoGo.Settings.sideBarType === "table") {
             settingsDiv.find('input#sideBarTypeTable').prop("checked", true);
         } else if (MaS.PoGo.Settings.sideBarType === "quick") {
             settingsDiv.find('input#sideBarTypeQuick').prop("checked", true);
-        }
-        else {
+        } else {
             settingsDiv.find('input#sideBarTypeCard').prop("checked", true);
         }
         settingsDiv.find('input[name=sidebarType]').click(function () {
@@ -295,67 +411,204 @@ MaS.PoGo.fn = (function () {
         //Append settings markup
         containerDiv.append(settingsDiv);
 
-        var dataDiv = $("<div class='pokeData'>")
+        var dataDiv = $("<div class='pokeData'>");
 
-        //Pokes markup
-        $.each(notifyPoke, function (i, p) {
+        //QuickStuff markup
+        if (MaS.PoGo.Settings.sideBarType === "quick") {
 
-            //check if poke should be showed
-            if (!p.hidden) {
+            //Show only markup
+            var showOnly = $("<div class='quickShowOnly'>");
+            showOnly.append('<h5>Show only <input type="checkbox" value="showonly" id="showonly"></h4>');
+            showOnly.append('<label><input type="checkbox" value="shownotify">Notify</label>');
+            showOnly.append('<label><input type="checkbox" value="1">1-Bulbasaur</label>');
+            showOnly.append('<label><input type="checkbox" value="4">4-Charmander</label>');
+            showOnly.append('<label><input type="checkbox" value="58">58-Growlithe</label>');
+            showOnly.append('<label><input type="checkbox" value="63">63-Abra</label>');
+            showOnly.append('<label><input type="checkbox" value="66">66-Machop</label>');
+            showOnly.append('<label><input type="checkbox" value="74">74-Geodude</label>');
+            showOnly.append('<label><input type="checkbox" value="111">111-Rhyhorn</label>');
+            showOnly.append('<label><input type="checkbox" value="133">133-Eevee</label>');
+            showOnly.append('<label><input type="checkbox" value="138">138-Omanyte</label>');
+            showOnly.append('<label><input type="checkbox" value="147">147-Dratini</label>');
+            showOnly.append('<label><input type="checkbox" value="246">246-Larvitar</label>');
+            showOnly.append('<label>Custom<input type="text"></label>');
 
-                //Table markup
-                if (MaS.PoGo.Settings.sideBarType === "table") {
-                    var table = consoleData(p);
-                    table = $("<div id='tableRow'><div>" + table.replace(/\, /g, "</div><div>") + "</div></div>");
-                    table.click(function () {
-                        toggleMarker(p);
+            //Apply show only settings
+            showOnly.find("INPUT[type=checkbox]").each(function(){
+                var box = $(this);
+                box.prop("checked", !!MaS.PoGo.Settings.showOnlySettings[box.val()]);
+            });
+            showOnly.find("INPUT[type=text]").val(!MaS.PoGo.Settings.showOnlySettings["custom"] ? "" : MaS.PoGo.Settings.showOnlySettings["custom"]);
+
+            //Show only actions
+            showOnly.on("change", "INPUT", function () {
+                var isShowOnlyOn = showOnly.find("#showonly").prop("checked");
+                var showOnlyNumbers = [];
+
+                //If master switch changed
+                if ($(this).val() == "showonly") {
+                    if(isShowOnlyOn){
+                        saveCurrentExcludePoke();
+                    }else{
+                        reapplyLastSavedExcludePoke();
+                    }
+                } 
+                
+                //if master switch on (and sub switch changed)
+                if(isShowOnlyOn) {
+                    showOnly.find("LABEL INPUT[type=checkbox]:checked").each(function () {
+                        var val = $(this).val();
+                        if (isNaN(val) && val === "shownotify") {
+                            showOnlyNumbers = showOnlyNumbers.concat(notifiedPokemon);
+                        } else if (!isNaN(val)) {
+                            showOnlyNumbers.push(Number(val));
+                        }
                     });
-                    dataDiv.append(table);
 
+                    var customN = showOnly.find("INPUT[type=text]").val().split(",").map(Number).filter(function (a) {
+                        return !isNaN(a) && a !== 0
+                    });
+                    showOnlyNumbers = showOnlyNumbers.concat(customN);
+
+                    showOnlyNumbers = showOnlyNumbers.slice() // slice makes copy of array before sorting it
+                        .sort(function (a, b) {
+                            return a - b;
+                        })
+                        .reduce(function (a, b) {
+                            if (a.slice(-1)[0] !== b) a.push(b); // slice(-1)[0] means last item in array without removing it (like .pop())
+                            return a;
+                        }, []); // this empty array becomes the starting value for a
                 }
-                //Quick markup
-                else if (MaS.PoGo.Settings.sideBarType === "quick") {
-                    dataDiv.append("<div class='quickStuff'><div>Show only<div>")
+
+                //Apply exclude numbers if any
+                if(showOnlyNumbers.length > 0){
+                    var excludeNumbers = allPokeNumbers.filter(function (a) {
+                        return showOnlyNumbers.indexOf(a) === -1;
+                    });
+
+                    //apply excluded poke at sorce
+                    $selectExclude.val(excludeNumbers).change();
+                    refreshMap();
                 }
-                //Card markup
-                else {
 
-                    var pokeDiv = $("<div class='pokeCard'>");
-                    pokeDiv.append(pokemonLabel(this));
+                //Save showonly settings
+                var showOnlySettings= {};
+                showOnly.find("INPUT[type=checkbox]").each(function(){
+                    var box = $(this);
+                    showOnlySettings[box.val()] = box.prop("checked");
+                });
+                MaS.PoGo.Settings.showOnlySettings["custom"] = showOnly.find("INPUT[type=text]").val();
 
-                    //Replace notify action with show action
-                    pokeDiv.find("SPAN.pokemon.links.notify A").text("Show").attr("href", "javascript:").click(function () {
-                        toggleMarker(p);
-                    });
+                MaS.PoGo.Settings.showOnlySettings = showOnlySettings;
+                showSideBar();
+            });
+            dataDiv.append(showOnly);
 
-                    //Replace exclude action with zoom action
-                    pokeDiv.find("SPAN.pokemon.links.exclude A").text("Zoom").attr("href", "javascript:").click(function () {
-                        centerMap(p.latitude, p.longitude, 14);
-                        toggleMarker(p);
-                    });
+            //Saved exclude set markup
+            var showSaved = $("<div class='quickShowSaved'>");
+            var mpStore = JSON.parse(localStorage.getItem(MaS.PoGo.Settings.localStorageKey) || '{"auto":[], "manual":[]}');
 
-                    //Append remove card action on regular remove action
-                    pokeDiv.find("SPAN.pokemon.links.remove A").click(function () {
-                        pokeDiv.remove();
-                    });
-
-                    //Add close (remove card) button
-                    var closeBtn = $('<div class="pokeCardClose">X</div>');
-                    closeBtn.click(function () {
-                        pokeDiv.remove();
-                    });
-                    pokeDiv.append(closeBtn);
-
-                    //Add card to sidebar
-                    dataDiv.append(pokeDiv);
+            showSaved.append('<div class="h1">Exclude sets</div>');
+            showSaved.append('<div><div>Default + Geodude</div><div><a href="javascript:" data-action="apply" data-setname="default">Apply</a></div></div>');
+            showSaved.append('<div><div>High value only</div><div><a href="javascript:" data-action="apply" data-setname="high">Apply</a></div></div>');
+            showSaved.append('<div><div>Medium</div><div><a href="javascript:" data-action="apply" data-setname="medium">Apply</a></div></div>');
+            showSaved.append('<div class="h2">Saved | <a href="javascript:" data-action="save">Save current</a></div>');
+            mpStore.manual.forEach(function(i) {
+                showSaved.append('<div><div>' + i.name + '</div><div><a href="javascript:" data-action="apply" data-setname="' + i.name + '">Apply</a></div><div><a href="javascript:" data-action="remove" data-setname="' + i.name + '">Remove</a></div></div>');
+            });
+            showSaved.append('<div class="h2">Auto</div>');
+            mpStore.auto.forEach(function(i) {
+                var nameDate = i.name.substring(5)
+                if(!isNaN(nameDate)){
+                    nameDate = moment(Number(nameDate)).format("YYYY-MM-DD HH:mm:ss");
+                }else
+                {
+                    nameDate = i.name;
                 }
-            }
-        });
+                showSaved.append('<div><div>' + nameDate + '</div><div><a href="javascript:" data-action="apply" data-setname="' + i.name + '">Apply</a></div><div><a href="javascript:" data-action="remove" data-setname="' + i.name + '">Remove</a></div></div>');
+            });
+
+            //Exclude set actions
+            showSaved.find("A").click(function(){
+                var anchor = $(this);
+                if(anchor.data("action") === "apply"){
+                    applyExcludePokeSet(anchor.data("setname"));
+                }else if(anchor.data("action") === "remove"){
+                    removeExcludePokeSet(anchor.data("setname"));
+                    showSideBar();
+                }else if(anchor.data("action") === "save"){
+                    var setName = prompt("ExcludeSetName");
+                    setName = setName.replace(/[^\d\w]*/, "");
+                    if(setName.length > 0){
+                        saveCurrentExcludePoke(setName);
+                        showSideBar();
+                    }else{
+                        console.log("Error: exclude set name must be longer than zero");
+                    }
+                    
+                }
+            });
+
+            dataDiv.append(showSaved);
+
+        } else {
+
+            //Pokes markup
+            $.each(notifyPoke, function (i, p) {
+
+                //check if poke should be showed
+                if (!p.hidden) {
+
+                    //Table markup
+                    if (MaS.PoGo.Settings.sideBarType === "table") {
+                        var table = consoleData(p);
+                        table = $("<div id='tableRow'><div>" + table.replace(/\, /g, "</div><div>") + "</div></div>");
+                        table.click(function () {
+                            toggleMarker(p);
+                        });
+                        dataDiv.append(table);
+
+                    }
+                    //Card markup
+                    else {
+
+                        var pokeDiv = $("<div class='pokeCard'>");
+                        pokeDiv.append(pokemonLabel(this));
+
+                        //Replace notify action with show action
+                        pokeDiv.find("SPAN.pokemon.links.notify A").text("Show").attr("href", "javascript:").click(function () {
+                            toggleMarker(p);
+                        });
+
+                        //Replace exclude action with zoom action
+                        pokeDiv.find("SPAN.pokemon.links.exclude A").text("Zoom").attr("href", "javascript:").click(function () {
+                            centerMap(p.latitude, p.longitude, 14);
+                            toggleMarker(p);
+                        });
+
+                        //Append remove card action on regular remove action
+                        pokeDiv.find("SPAN.pokemon.links.remove A").click(function () {
+                            pokeDiv.remove();
+                        });
+
+                        //Add close (remove card) button
+                        var closeBtn = $('<div class="pokeCardClose">X</div>');
+                        closeBtn.click(function () {
+                            pokeDiv.remove();
+                        });
+                        pokeDiv.append(closeBtn);
+
+                        //Add card to sidebar
+                        dataDiv.append(pokeDiv);
+                    }
+                }
+            });
+        }
 
         containerDiv.append(dataDiv);
 
         //Empty and add sidebar markup, make it visable and add close action
-        $("#gym-details").empty().append(containerDiv).append('<a href="#" class="close" tabindex="0"></a>');
+        $("#gym-details").empty().append(containerDiv).append('<a href="#" class="close" style="line-height: inherit; padding-right: 5px;" tabindex="0"></a>');
         $("#gym-details").addClass("visible");
         $("#gym-details").attr("style", "width:360px;")
         $("#gym-details").on("click", ".close", function () {
@@ -372,16 +625,15 @@ MaS.PoGo.fn = (function () {
         toastr.clear();
         if (MaS.PoGo.Settings.showToasterBtn) addToasterBtn();
         if (MaS.PoGo.Settings.showSideBarBtn) addSideBarBtn();
-        if (MaS.PoGo.Settings.showMapReshBtn) addMapRefreshBtn();
         if (MaS.PoGo.Settings.showSideBarOnLoad) showSideBar();
         $("HEAD").append(MaS.PoGo.Style);
     }
 
-
     return {
         Init: init,
         ShowToaster: showToaster,
-        ShowSideBar: showSideBar
+        ShowSideBar: showSideBar,
+        P: reapplyLastSavedExcludePoke
     }
 })();
 

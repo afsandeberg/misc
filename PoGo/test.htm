@@ -1,23 +1,18 @@
-<script>
-    function loadJ($) {
-
-        var s = document.createElement("script");
-        s.src = "http://code.jquery.com/jquery-3.2.1.min.js";
-        s.onload = s.onreadystatechange = function (a, b, c) {
-            if (!this.readyState || this.readyState == "loaded" || this.readyState == "complete") {
-
-                // Handle memory leak in IE
-                s.onload = s.onreadystatechange = null;
-                console.log("kalle")
-            }
+<html>
+<head>
+    <script src="http://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <style>
+        .t{
+            line-height: inherit; padding-right: 5px;
         }
-        document.getElementsByTagName("head")[0].appendChild(s)
-    }
-</script>
-
-<script src="https://onedrive.live.com/embed?cid=853B7CB5F40DD7F2&resid=853B7CB5F40DD7F2%2161025&authkey=ADXYb5KKUZN4EZ0"></script>
-
-<form>
-    Card <input type="radio" name="sidebarType" value="card">
-    Table <input type="radio" name="sidebarType" value="table">
-</form>
+    </style>
+</head>
+<body>
+    <label><input type="checkbox" name="checkbox" value="value">Text</label>
+    <script>
+    $("label").change(function(){
+        alert($(this).find("input").prop("checked"));
+    });
+    </script>
+</body>
+</html>
