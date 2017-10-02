@@ -13,6 +13,7 @@ MaS.PoGo.Settings = {
     sideBarType: "table", //card or table
     sortType: "Lvl", //Prop to sort view by
     localStorageKey: "MaSPoGo",
+    localStorageSettingsKey: "MaSPoGoSettings",
     highValuePokeSet: [7,8,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,60,61,62,69,70,71,72,73,77,78,79,80,81,82,84,85,86,87,88,90,91,92,93,95,96,97,98,99,100,101,104,105,106,107,108,109,110,116,117,118,119,120,121,122,123,124,125,126,137,138,139,140,141,142,152,153,158,159,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,198,199,200,202,203,204,205,206,207,208,209,210,211,212,213,215,216,218,219,220,221,223,224,226,227,228,229,230,231,233,234,236,237,238,239,240,241],
     mediumValuePokeSet: [10,11,12,13,14,16,17,19,20,21,22,29,32,33,35,41,43,46,48,50,54,55,60,61,69,72,77,79,81,90,96,98,100,116,118,120,122,161,162,163,164,165,166,167,177,178,183,190,194,198,202,215,218,220,223],
     defaultNotifySet: [6, 65, 68, 76, 94, 103, 113, 128, 134, 143, 149, 196, 214, 242, 247, 248],
@@ -21,7 +22,7 @@ MaS.PoGo.Settings = {
 
 MaS.PoGo.Style = (function () {/*
             <style>
-                #gym-details H5, #gym-details H6{
+                #gym-details H5, #gym-details H6, #gym-details H4{
                     margin: 0 0 0 0
                 }
                 .btnStyle{
@@ -92,6 +93,9 @@ MaS.PoGo.Style = (function () {/*
                     opacity: 0.7;
                     font-size:14px;
                 }
+                .quick{
+                    margin-top:10px;
+                }
                 .quickShowOnly LABEL{
                     display:inline-block;
                     width:100px;
@@ -103,23 +107,16 @@ MaS.PoGo.Style = (function () {/*
                     font-size:9px; 
                     width:300px;
                 }
-                .quickShowSaved{
-                    padding-top:15px;
-                }
-                .quickShowSaved .h1{
-                    font-size:10px;
-                    font-weight: bold;
-                }
-                .quickShowSaved .h2{
-                    font-size:10px;
-                }
                 .quickShowSaved>DIV DIV{
                     display:inline-block;
                     margin-left:10px;
                 }
                 .quickShowSaved>DIV DIV:first-child{
-                    
                     width: 120px;
+                }
+                .timeout INPUT[type=text]{
+                    font-size:9px; 
+                    width:30px;
                 }
             </style>     
          */}).toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1];
@@ -131,7 +128,7 @@ MaS.PoGo.fn = (function () {
     var intervalID = null;
     var allPokeData = $.map(idToPokemon, function(a,b){a.id = b; return a;})
     var allPokeNumbers = (function () {var all = [];for (var i = 1; i <= 248; i++) {all.push(i);}return all;})(); //all Poke numbers upp to Lugia
-    var that = this;
+    var settings = $.extend(true, {}, MaS.PoGo.Settings);
 
     //Const
     var toastOptFull = {
@@ -166,7 +163,7 @@ MaS.PoGo.fn = (function () {
             }
             return p;
         }).sort(function (a, b) {
-            var sortType = MaS.PoGo.Settings.sortType.toLowerCase();
+            var sortType = settings.sortType.toLowerCase();
 
             if (sortType === "name") {
                 return a.pokemon_name > b.pokemon_name ? 1 : a.pokemon_name < b.pokemon_name ? -1 : 0;
@@ -188,9 +185,9 @@ MaS.PoGo.fn = (function () {
     }
 
     function autoRefresh() {
-        if (MaS.PoGo.Settings.autoRefresh && intervalID === null) {
-            intervalID = setInterval(showSideBar, MaS.PoGo.Settings.refreshInterval * 1000);
-        } else if (!MaS.PoGo.Settings.autoRefresh && intervalID !== null) {
+        if (settings.autoRefresh && intervalID === null) {
+            intervalID = setInterval(showSideBar, settings.refreshInterval * 1000);
+        } else if (!settings.autoRefresh && intervalID !== null) {
             clearInterval(intervalID);
             intervalID = null;
         }
@@ -251,7 +248,7 @@ MaS.PoGo.fn = (function () {
     }
 
     function saveCurrentExcludePoke(name){
-        var mpStore = JSON.parse(localStorage.getItem(MaS.PoGo.Settings.localStorageKey) || '{"auto":[], "manual":[]}');
+        var mpStore = JSON.parse(localStorage.getItem(settings.localStorageKey) || '{"auto":[], "manual":[]}');
 
         if(typeof name === "undefined"){ 
             name = "auto-" + (new Date()).getTime(); 
@@ -264,14 +261,14 @@ MaS.PoGo.fn = (function () {
             mpStore.manual.unshift({"name": name, "excludedPoke": excludedPokemon})
         }
 
-        localStorage.setItem(MaS.PoGo.Settings.localStorageKey,JSON.stringify(mpStore));
+        localStorage.setItem(settings.localStorageKey,JSON.stringify(mpStore));
     }
 
     function removeExcludePokeSet(name){
-        var mpStore = JSON.parse(localStorage.getItem(MaS.PoGo.Settings.localStorageKey) || '{"auto":[], "manual":[]}');
+        var mpStore = JSON.parse(localStorage.getItem(settings.localStorageKey) || '{"auto":[], "manual":[]}');
         mpStore.manual = mpStore.manual.filter(function(a){return a.name.toLowerCase() !== name.toLowerCase();});
         mpStore.auto = mpStore.auto.filter(function(a){return a.name.toLowerCase() !== name.toLowerCase();});
-        localStorage.setItem(MaS.PoGo.Settings.localStorageKey,JSON.stringify(mpStore));
+        localStorage.setItem(settings.localStorageKey,JSON.stringify(mpStore));
     }
 
     function applyExcludePokeSet(name){
@@ -287,18 +284,18 @@ MaS.PoGo.fn = (function () {
             return;
         }
         if(name === "high"){
-            $selectExclude.val(MaS.PoGo.Settings.highValuePokeSet).change();
+            $selectExclude.val(settings.highValuePokeSet).change();
             refreshMap();
             return;
         }
         if(name === "medium"){
-            $selectExclude.val(MaS.PoGo.Settings.mediumValuePokeSet).change();
+            $selectExclude.val(settings.mediumValuePokeSet).change();
             refreshMap();
             return;
         }
 
 
-        var mpStore = JSON.parse(localStorage.getItem(MaS.PoGo.Settings.localStorageKey) || '{"auto":[], "manual":[]}');
+        var mpStore = JSON.parse(localStorage.getItem(settings.localStorageKey) || '{"auto":[], "manual":[]}');
         var excludeSet =  mpStore.manual.filter(function(a){return a.name.toLowerCase() === name;});
         if(excludeSet.length < 1){
             excludeSet =  mpStore.auto.filter(function(a){return a.name.toLowerCase() === name;});
@@ -312,7 +309,7 @@ MaS.PoGo.fn = (function () {
     }
 
     function reapplyLastSavedExcludePoke() {
-        var mpStore = JSON.parse(localStorage.getItem(MaS.PoGo.Settings.localStorageKey) || '{"auto":[], "manual":[]}');
+        var mpStore = JSON.parse(localStorage.getItem(settings.localStorageKey) || '{"auto":[], "manual":[]}');
         if(mpStore.auto.length > 0){
             $selectExclude.val(mpStore.auto.slice(-1)[0].excludedPoke).change();
             refreshMap();
@@ -323,10 +320,10 @@ MaS.PoGo.fn = (function () {
     }
 
     function refreshMap()    {
-        updateMap();
         redrawPokemon(mapData.pokemons);
         redrawPokemon(mapData.lurePokemons);
         markerCluster.repaint();
+        updateMap();
     }
 
 
@@ -369,18 +366,18 @@ MaS.PoGo.fn = (function () {
         settingsDiv.append("Quick<input type='radio' id='sideBarTypeQuick' name='sidebarType' value='quick'>");
 
         //Settings actions
-        if (MaS.PoGo.Settings.autoRefresh) {
+        if (settings.autoRefresh) {
             settingsDiv.find("INPUT#autoRefresh").prop('checked', true);
             autoRefresh();
         }
         settingsDiv.find("INPUT#autoRefresh").click(function () {
-            MaS.PoGo.Settings.autoRefresh = $(this).prop('checked');
+            settings.autoRefresh = $(this).prop('checked');
             autoRefresh();
         });
 
-        settingsDiv.find("SELECT#sortBy").val(MaS.PoGo.Settings.sortType);
+        settingsDiv.find("SELECT#sortBy").val(settings.sortType);
         settingsDiv.find("SELECT#sortBy").change(function () {
-            MaS.PoGo.Settings.sortType = $(this).val();
+            settings.sortType = $(this).val();
             showSideBar();
         });
 
@@ -395,19 +392,21 @@ MaS.PoGo.fn = (function () {
 
         settingsDiv.find("A#resetData").click(function () {
             toastr.info("Reseting data...", "", toastOptBotRig);
+            settings = $.extend(true, {}, MaS.PoGo.Settings);
             unHide(notifyPoke);
             refreshMap();
+
         });
 
-        if (MaS.PoGo.Settings.sideBarType === "table") {
+        if (settings.sideBarType === "table") {
             settingsDiv.find('input#sideBarTypeTable').prop("checked", true);
-        } else if (MaS.PoGo.Settings.sideBarType === "quick") {
+        } else if (settings.sideBarType === "quick") {
             settingsDiv.find('input#sideBarTypeQuick').prop("checked", true);
         } else {
             settingsDiv.find('input#sideBarTypeCard').prop("checked", true);
         }
         settingsDiv.find('input[name=sidebarType]').click(function () {
-            MaS.PoGo.Settings.sideBarType = $(this).val();
+            settings.sideBarType = $(this).val();
             showSideBar();
         });
 
@@ -417,11 +416,11 @@ MaS.PoGo.fn = (function () {
         var dataDiv = $("<div class='pokeData'>");
 
         //QuickStuff markup
-        if (MaS.PoGo.Settings.sideBarType === "quick") {
+        if (settings.sideBarType === "quick") {
 
             //Show only markup
-            var showOnly = $("<div class='quickShowOnly'>");
-            showOnly.append('<h5>Show only <input type="checkbox" value="showonly" id="showonly"></h4>');
+            var showOnly = $("<div class='quick quickShowOnly'>");
+            showOnly.append('<h4>Show only <input type="checkbox" value="showonly" id="showonly"></h4>');
             showOnly.append('<label><input type="checkbox" value="shownotify">Notify</label>');
             showOnly.append('<label><input type="checkbox" value="1">1-Bulbasaur</label>');
             showOnly.append('<label><input type="checkbox" value="4">4-Charmander</label>');
@@ -439,9 +438,9 @@ MaS.PoGo.fn = (function () {
             //Apply show only settings
             showOnly.find("INPUT[type=checkbox]").each(function(){
                 var box = $(this);
-                box.prop("checked", !!MaS.PoGo.Settings.showOnlySettings[box.val()]);
+                box.prop("checked", !!settings.showOnlySettings[box.val()]);
             });
-            showOnly.find("INPUT[type=text]").val(!MaS.PoGo.Settings.showOnlySettings["custom"] ? "" : MaS.PoGo.Settings.showOnlySettings["custom"]);
+            showOnly.find("INPUT[type=text]").val(!settings.showOnlySettings["custom"] ? "" : settings.showOnlySettings["custom"]);
 
             //Show only actions
             showOnly.on("change", "INPUT", function () {
@@ -501,24 +500,24 @@ MaS.PoGo.fn = (function () {
                     showOnlySettings[box.val()] = box.prop("checked");
                 });
                 showOnlySettings["custom"] = showOnly.find("INPUT[type=text]").val();
-                MaS.PoGo.Settings.showOnlySettings = showOnlySettings;
+                settings.showOnlySettings = showOnlySettings;
                 showSideBar();
             });
             dataDiv.append(showOnly);
 
             //Saved exclude set markup
-            var showSaved = $("<div class='quickShowSaved'>");
-            var mpStore = JSON.parse(localStorage.getItem(MaS.PoGo.Settings.localStorageKey) || '{"auto":[], "manual":[]}');
+            var showSaved = $("<div class='quick quickShowSaved'>");
+            var mpStore = JSON.parse(localStorage.getItem(settings.localStorageKey) || '{"auto":[], "manual":[]}');
 
-            showSaved.append('<div class="h1">Exclude sets</div>');
+            showSaved.append('<h4>Exclude sets</h4>');
             showSaved.append('<div><div>Default + Geodude</div><div><a href="javascript:" data-action="apply" data-setname="default">Apply</a></div></div>');
             showSaved.append('<div><div>High value only</div><div><a href="javascript:" data-action="apply" data-setname="high">Apply</a></div></div>');
             showSaved.append('<div><div>Medium</div><div><a href="javascript:" data-action="apply" data-setname="medium">Apply</a></div></div>');
-            showSaved.append('<div class="h2">Saved | <a href="javascript:" data-action="save">Save current</a></div>');
+            showSaved.append('<div><h5 style="display:inline-block;">Saved</h5> | <a href="javascript:" data-action="save">Save current</a></div>');
             mpStore.manual.forEach(function(i) {
                 showSaved.append('<div><div>' + i.name + '</div><div><a href="javascript:" data-action="apply" data-setname="' + i.name + '">Apply</a></div><div><a href="javascript:" data-action="remove" data-setname="' + i.name + '">Remove</a></div></div>');
             });
-            showSaved.append('<div class="h2">Auto</div>');
+            showSaved.append('<h5>Auto</h5>');
             mpStore.auto.forEach(function(i) {
                 var nameDate = i.name.substring(5)
                 if(!isNaN(nameDate)){
@@ -550,18 +549,62 @@ MaS.PoGo.fn = (function () {
                     
                 }
             });
-
             dataDiv.append(showSaved);
 
             //Default notify set
-            var notifySet = $("<div style='margin-top:10px;'><h5>Notify sets</h5></div>");
+            var notifySet = $("<div class='quick'><h4>Notify sets</h4></div>");
             notifySet.append("<a href='javascript:'>Apply my default notify set</a>")
             notifySet.find("A").click(function(){
-                $selectPokemonNotify.val(MaS.PoGo.Settings.defaultNotifySet).trigger("change");
+                $selectPokemonNotify.val(settings.defaultNotifySet).trigger("change");
                 refreshMap();
             });
-
             dataDiv.append(notifySet);
+
+            //Reload timmeout
+            var timeout = $("<div class='quick timeout'><h4>Reload timeout</h4></div>");
+            timeout.append('Timeout in seconds <input type="text">');
+            timeout.find("INPUT").val(settings.refreshInterval).change(function(){
+                if(!isNaN($(this).val())){
+                    settings.refreshInterval = Number($(this).val());
+                } else{
+                    $(this).val(settings.refreshInterval)
+                }
+            });
+            dataDiv.append(timeout);
+
+              //Default notify set
+              var showSidebarOnLoad = $("<div class='quick'><h4>Show sidebar onload</h4></div>");
+              showSidebarOnLoad.append("<input type='checkbox'>")
+              showSidebarOnLoad.find("INPUT").prop("checked", settings.showSideBarOnLoad).change(function(){
+                settings.showSideBarOnLoad = $(this).prop("checked");
+              });
+              dataDiv.append(showSidebarOnLoad);
+
+            var zoomLvl = $("<div class='quick'><h4>Zoom level</h4></div>");
+            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='-'>Zoom--</a></div>")
+            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='+'>Zoom++</a></div>")
+            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='10'>Zoom out (lvl 10)</a></div>")
+            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='14'>Zoom in (lvl 14)</a></div>")
+            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='16' data-latlng='59.3250458369,18.070779102100005'>Default zoom and default center</a></div>")
+            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='10' data-latlng=59.32758578719692,18.07140137459146'>Stor Sthlm zoom and center</a></div>")
+            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='14' data-latlng='59.32758578719692,18.071401374591446'>Sthlm city zoom and center</a></div>")
+            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='16' data-latlng='59.37156059938661,18.003938453448868'>MoS zoom and center</a></div>")
+            zoomLvl.find("A").click(function(){
+                var zLvl = $(this).data("zoomlvl");
+                var latlng = $(this).data("latlng");
+                latlng = (typeof latlng === "undefined") ? [] : latlng.split(",");
+                if(isNaN(zLvl)){
+                    if(zLvl === "+"){map.setZoom(map.getZoom() + 1);}
+                    if(zLvl === "-"){map.setZoom(map.getZoom() - 1);}
+                }else{
+                    if(latlng.length === 2){
+                        centerMap(Number(latlng[0]), Number(latlng[1]), Number(zLvl));
+                    }else{
+                        map.setZoom(Number(zLvl));
+                    }
+                }
+            });
+            dataDiv.append(zoomLvl);
 
         } else {
 
@@ -572,7 +615,7 @@ MaS.PoGo.fn = (function () {
                 if (!p.hidden) {
 
                     //Table markup
-                    if (MaS.PoGo.Settings.sideBarType === "table") {
+                    if (settings.sideBarType === "table") {
                         var table = consoleData(p);
                         table = $("<div id='tableRow'><div>" + table.replace(/\, /g, "</div><div>") + "</div></div>");
                         table.click(function () {
@@ -634,18 +677,25 @@ MaS.PoGo.fn = (function () {
     }
 
     function init() {
+        var storeSetting = JSON.parse(localStorage.getItem(settings.localStorageSettingsKey));
+        if(!!storeSetting){
+            settings = $.extend(true, settings, storeSetting);
+        }
         toastr.clear();
-        if (MaS.PoGo.Settings.showToasterBtn) addToasterBtn();
-        if (MaS.PoGo.Settings.showSideBarBtn) addSideBarBtn();
-        if (MaS.PoGo.Settings.showSideBarOnLoad) showSideBar();
+        if (settings.showToasterBtn) addToasterBtn();
+        if (settings.showSideBarBtn) addSideBarBtn();
+        if (settings.showSideBarOnLoad) showSideBar();
         $("HEAD").append(MaS.PoGo.Style);
     }
+
+    window.onbeforeunload = function(){
+        localStorage.setItem(settings.localStorageSettingsKey, JSON.stringify(settings));
+    };
 
     return {
         Init: init,
         ShowToaster: showToaster,
-        ShowSideBar: showSideBar,
-        P: reapplyLastSavedExcludePoke
+        ShowSideBar: showSideBar
     }
 })();
 
