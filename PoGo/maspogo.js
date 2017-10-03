@@ -117,6 +117,7 @@ MaS.PoGo.Style = (function () {/*
                 .timeout INPUT[type=text]{
                     font-size:9px; 
                     width:30px;
+                    display:inline-block;
                 }
             </style>     
          */}).toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1];
@@ -562,7 +563,7 @@ MaS.PoGo.fn = (function () {
 
             //Reload timmeout
             var timeout = $("<div class='quick timeout'><h4>Reload timeout</h4></div>");
-            timeout.append('Timeout in seconds <input type="text">');
+            timeout.append('<div>Timeout in seconds <input type="text"><div>');
             timeout.find("INPUT").val(settings.refreshInterval).change(function(){
                 if(!isNaN($(this).val())){
                     settings.refreshInterval = Number($(this).val());
@@ -572,21 +573,22 @@ MaS.PoGo.fn = (function () {
             });
             dataDiv.append(timeout);
 
-              //Default notify set
-              var showSidebarOnLoad = $("<div class='quick'><h4>Show sidebar onload</h4></div>");
-              showSidebarOnLoad.append("<input type='checkbox'>")
-              showSidebarOnLoad.find("INPUT").prop("checked", settings.showSideBarOnLoad).change(function(){
+            //Show sidebar on load
+            var showSidebarOnLoad = $("<div class='quick'><h4 style='display:inline-block;'>Show sidebar onload</h4></div>");
+            showSidebarOnLoad.append("<input type='checkbox'>")
+            showSidebarOnLoad.find("INPUT").prop("checked", settings.showSideBarOnLoad).change(function(){
                 settings.showSideBarOnLoad = $(this).prop("checked");
-              });
-              dataDiv.append(showSidebarOnLoad);
+            });
+            dataDiv.append(showSidebarOnLoad);
 
+            //Zoom levels
             var zoomLvl = $("<div class='quick'><h4>Zoom level</h4></div>");
             zoomLvl.append("<div><a href='javascript:' data-zoomlvl='-'>Zoom--</a></div>")
             zoomLvl.append("<div><a href='javascript:' data-zoomlvl='+'>Zoom++</a></div>")
             zoomLvl.append("<div><a href='javascript:' data-zoomlvl='10'>Zoom out (lvl 10)</a></div>")
             zoomLvl.append("<div><a href='javascript:' data-zoomlvl='14'>Zoom in (lvl 14)</a></div>")
             zoomLvl.append("<div><a href='javascript:' data-zoomlvl='16' data-latlng='59.3250458369,18.070779102100005'>Default zoom and default center</a></div>")
-            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='10' data-latlng=59.32758578719692,18.07140137459146'>Stor Sthlm zoom and center</a></div>")
+            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='10' data-latlng='59.32758578719692,18.07140137459146'>Stor Sthlm zoom and center</a></div>")
             zoomLvl.append("<div><a href='javascript:' data-zoomlvl='14' data-latlng='59.32758578719692,18.071401374591446'>Sthlm city zoom and center</a></div>")
             zoomLvl.append("<div><a href='javascript:' data-zoomlvl='16' data-latlng='59.37156059938661,18.003938453448868'>MoS zoom and center</a></div>")
             zoomLvl.find("A").click(function(){
