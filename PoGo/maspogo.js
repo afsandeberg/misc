@@ -130,6 +130,7 @@ MaS.PoGo.fn = (function () {
     var allPokeData = $.map(idToPokemon, function(a,b){a.id = b; return a;})
     var allPokeNumbers = (function () {var all = [];for (var i = 1; i <= 248; i++) {all.push(i);}return all;})(); //all Poke numbers upp to Lugia
     var settings = $.extend(true, {}, MaS.PoGo.Settings);
+    var reloadCounter = 0;
 
     //Const
     var toastOptFull = {
@@ -343,6 +344,15 @@ MaS.PoGo.fn = (function () {
     }
 
     function showSideBar() {
+
+        if(reloadCounter > 9){
+            reloadCounter = 0;
+            refreshMap();
+        }
+        else{
+            reloadCounter++
+        }
+
         //toastr.info("(Re)Loading sidebar...",{progressBar: true, timeOut:1000})  
         //console.log("Load sidebar");
         loadPokeData();
