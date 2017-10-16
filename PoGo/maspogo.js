@@ -7,6 +7,7 @@ MaS.PoGo = MaS.PoGo || {};
 MaS.PoGo.Settings = {
     showToasterBtn: true,
     showSideBarBtn: true,
+    showRemoveToastersBtn: true,
     showSideBarOnLoad: true,
     autoRefresh: true,
     refreshInterval: 15, //sec 
@@ -247,6 +248,15 @@ MaS.PoGo.fn = (function () {
             showSideBar();
         });
         $("HEADER#header").append(sideBarBtn);
+    }
+
+    function addRemoveToastersBtn() {
+        $("HEADER#header A#removeToasters").remove();
+        var removeToastersBtn = $('<a href="javascript:" id="removeToasters" class="statsNav btnStyle"><span class="label">Remove Toasters</span></a>');
+        removeToastersBtn.click(function () {
+            toastr.clear();
+        });
+        $("HEADER#header").append(removeToastersBtn);
     }
 
     function saveCurrentExcludePoke(name){
@@ -696,6 +706,7 @@ MaS.PoGo.fn = (function () {
         toastr.clear();
         if (settings.showToasterBtn) addToasterBtn();
         if (settings.showSideBarBtn) addSideBarBtn();
+        if (settings.showRemoveToastersBtn) addRemoveToastersBtn();
         if (settings.showSideBarOnLoad) showSideBar();
         $("HEAD").append(MaS.PoGo.Style);
     }
