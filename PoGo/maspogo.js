@@ -643,18 +643,18 @@ MaS.PoGo.fn = (function () {
                         pokeDiv.append(pokemonLabel(this));
 
                         //Replace notify action with show action
-                        pokeDiv.find("SPAN.pokemon.links.notify A").text("Show").attr("href", "javascript:").click(function () {
+                        pokeDiv.find("DIV.pokemon.links > A[href*='notify']").text("Show").attr("href", "javascript:").click(function () {
                             toggleMarker(p);
                         });
 
                         //Replace exclude action with zoom action
-                        pokeDiv.find("SPAN.pokemon.links.exclude A").text("Zoom").attr("href", "javascript:").click(function () {
+                        pokeDiv.find("DIV.pokemon.links > A[href*='exclude']").text("Zoom").attr("href", "javascript:").click(function () {
                             centerMap(p.latitude, p.longitude, 14);
                             toggleMarker(p);
                         });
 
                         //Append remove card action on regular remove action
-                        pokeDiv.find("SPAN.pokemon.links.remove A").click(function () {
+                        pokeDiv.find("DIV.pokemon.links > A[href*='remove']").click(function () {
                             pokeDiv.remove();
                         });
 
