@@ -18,6 +18,7 @@ MaS.PoGo.Settings = {
     highValuePokeSet: [7,8,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,60,61,62,69,70,71,72,73,77,78,79,80,81,82,84,85,86,87,88,90,91,92,93,95,96,97,98,99,100,101,104,105,106,107,108,109,110,116,117,118,119,120,121,122,123,124,125,126,137,138,139,140,141,142,152,153,158,159,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,198,199,200,202,203,204,205,206,207,208,209,210,211,212,213,215,216,218,219,220,221,223,224,226,227,228,229,230,231,233,234,236,237,238,239,240,241],
     mediumValuePokeSet: [10,11,12,13,14,16,17,19,20,21,22,29,32,33,35,41,43,46,48,50,54,55,60,61,69,72,77,79,81,90,96,98,100,116,118,120,122,161,162,163,164,165,166,167,177,178,183,190,194,198,202,215,218,220,223],
     defaultNotifySet: [6, 65, 68, 76, 94, 103, 113, 128, 134, 143, 149, 196, 214, 242, 247, 248],
+    massiveNotifySet: [1, 2, 3, 4, 5, 6, 7, 8, 9, 59, 63, 64, 65, 66, 67, 68, 74, 75, 76, 94, 102, 103, 111, 112, 113, 128, 134, 135, 139, 143, 147, 148, 149, 160, 196, 214, 222, 225, 229, 235, 242, 246, 247, 248],
     showOnlySettings: {},
     scoutPokes: false,
     showLoadData: false
@@ -618,9 +619,16 @@ MaS.PoGo.fn = (function () {
 
             //Default notify set
             var notifySet = $("<div class='quick'><h4>Notify sets</h4></div>");
-            notifySet.append("<a href='javascript:'>Apply my default notify set</a>")
+            notifySet.append("<a href='javascript:' data-notifyset='default'>Apply my default notify set</a><br/>");
+            notifySet.append("<a href='javascript:' data-notifyset='massive'>Apply massive notify set</a>");
             notifySet.find("A").click(function(){
-                $selectPokemonNotify.val(settings.defaultNotifySet).trigger("change");
+                var notifyset = $(this).data("notifyset");
+                if(notifyset === "default"){
+                    $selectPokemonNotify.val(settings.defaultNotifySet).trigger("change");
+                }else if(notifyset === "massive"){
+                    $selectPokemonNotify.val(settings.massiveNotifySet).trigger("change");
+                }
+                
                 refreshMap();
             });
             dataDiv.append(notifySet);
