@@ -270,7 +270,7 @@ MaS.PoGo.fn = (function () {
         if(overwrite && !loadRawDataFunc){
             loadRawDataFunc = window.loadRawData;
             window.loadRawData = function(){
-                console.log("Loading data...")
+                //console.log("Loading data...")
                 return loadRawDataFunc().done(function(e){
                     pogoLastUpdateText = "Fetched " + e.pokemons.length + " pokemons at " + moment(e.timestamp).format("HH:mm:ss");
                     console.log(pogoLastUpdateText);
