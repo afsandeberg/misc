@@ -18,7 +18,9 @@ MaS.PoGo.Settings = {
     highValuePokeSet: [7,8,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,60,61,62,69,70,71,72,73,77,78,79,80,81,82,84,85,86,87,88,90,91,92,93,95,96,97,98,99,100,101,104,105,106,107,108,109,110,116,117,118,119,120,121,122,123,124,125,126,137,138,139,140,141,142,152,153,158,159,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,198,199,200,202,203,204,205,206,207,208,209,210,211,212,213,215,216,218,219,220,221,223,224,226,227,228,229,230,231,233,234,236,237,238,239,240,241],
     mediumValuePokeSet: [10,11,12,13,14,16,17,19,20,21,22,29,32,33,35,41,43,46,48,50,54,55,60,61,69,72,77,79,81,90,96,98,100,116,118,120,122,161,162,163,164,165,166,167,177,178,183,190,194,198,202,215,218,220,223],
     defaultNotifySet: [6, 65, 68, 76, 94, 103, 113, 128, 134, 143, 149, 196, 214, 242, 247, 248],
-    showOnlySettings: {}
+    showOnlySettings: {},
+    scoutPokes: false,
+    showLoadData: false
 };
 
 MaS.PoGo.Style = (function () {/*
@@ -120,6 +122,9 @@ MaS.PoGo.Style = (function () {/*
                     width:30px;
                     display:inline-block;
                 }
+                #pogoLastUpdate{
+                    font-size:9px;
+                }
             </style>     
          */}).toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1];
 
@@ -132,6 +137,8 @@ MaS.PoGo.fn = (function () {
     var allPokeNumbers = (function () {var all = [];for (var i = 1; i <= 248; i++) {all.push(i);}return all;})(); //all Poke numbers upp to Lugia
     var settings = $.extend(true, {}, MaS.PoGo.Settings);
     var reloadCounter = 0;
+    var loadRawDataFunc;
+    var pogoLastUpdateText = "---"
 
     //Const
     var toastOptFull = {
@@ -201,7 +208,7 @@ MaS.PoGo.fn = (function () {
         $.each(pokes, function (i, p) {
             p.marker.setAnimation(null);
             p.marker.animationDisabled = true;
-        })
+        });
     }
 
     function unHide(pokes) {
@@ -257,6 +264,38 @@ MaS.PoGo.fn = (function () {
             toastr.clear();
         });
         $("HEADER#header").append(removeToastersBtn);
+    }
+
+    function overrideLoadRwaData(overwrite){
+        if(overwrite && !loadRawDataFunc){
+            loadRawDataFunc = window.loadRawData;
+            window.loadRawData = function(){
+                console.log("Loading data...")
+                return loadRawDataFunc().done(function(e){
+                    pogoLastUpdateText = "Fetched " + e.pokemons.length + " pokemons at " + moment(e.timestamp).format("HH:mm:ss");
+                    console.log(pogoLastUpdateText);
+                    $("#pogoLastUpdate").html(pogoLastUpdateText);
+                });
+            }
+        }
+        else if(!!loadRawDataFunc){
+            window.loadRawData = loadRawDataFunc;
+            loadRawDataFunc = undefined;
+        }
+    }
+
+    function scoutPokes(pokes){
+        var counter = 0;
+        $.each(pokes, function (i, p) {
+            if(p.Iv === -1){
+                scout(p.encounter_id);
+                counter++;
+            }
+        });
+        
+        var msg = (counter > 0) ? "Scouting for " + counter + " pokemons" : "No pokemons to scout for";
+        console.log(msg);
+        toastr.info(msg, "", toastOptBotRig);
     }
 
     function saveCurrentExcludePoke(name){
@@ -364,7 +403,7 @@ MaS.PoGo.fn = (function () {
         }
 
         //toastr.info("(Re)Loading sidebar...",{progressBar: true, timeOut:1000})  
-        //console.log("Load sidebar");
+        console.log("Load sidebar");
         loadPokeData();
 
         //Sidebar markup
@@ -415,8 +454,8 @@ MaS.PoGo.fn = (function () {
             toastr.info("Reseting data...", "", toastOptBotRig);
             settings = $.extend(true, {}, MaS.PoGo.Settings);
             unHide(notifyPoke);
+            timestamp = undefined;
             refreshMap();
-
         });
 
         if (settings.sideBarType === "table") {
@@ -430,6 +469,11 @@ MaS.PoGo.fn = (function () {
             settings.sideBarType = $(this).val();
             showSideBar();
         });
+
+        // //Fetch scout data
+        // if(settings.scoutPokes){
+        //     scoutPokes(notifyPoke);
+        // }
 
         //Append settings markup
         containerDiv.append(settingsDiv);
@@ -595,11 +639,35 @@ MaS.PoGo.fn = (function () {
 
             //Show sidebar on load
             var showSidebarOnLoad = $("<div class='quick'><h4 style='display:inline-block;'>Show sidebar onload</h4></div>");
-            showSidebarOnLoad.append("<input type='checkbox'>")
+            showSidebarOnLoad.append("<input type='checkbox'>");
             showSidebarOnLoad.find("INPUT").prop("checked", settings.showSideBarOnLoad).change(function(){
                 settings.showSideBarOnLoad = $(this).prop("checked");
             });
             dataDiv.append(showSidebarOnLoad);
+
+            //Override loadRawData
+            var showLoadData = $("<div class='quick'><h4 style='display:inline-block;'>Show fetching pokedata</h4></div>");
+            showLoadData.append("<input type='checkbox'>");
+            showLoadData.append("<div id='pogoLastUpdate'>" + pogoLastUpdateText + "</div>");
+            showLoadData.find("INPUT").prop("checked", settings.showLoadData).change(function(){
+                settings.showLoadData = $(this).prop("checked")
+                overrideLoadRwaData(settings.showLoadData);
+            });
+            overrideLoadRwaData(settings.showLoadData);
+            dataDiv.append(showLoadData);
+
+             //Scout pokes
+             var shouldScoutPokes = $("<div class='quick'><h4 style='display:inline-block;'>Scout pokemons with no Iv</h4></div>");
+             shouldScoutPokes.append("<br><a href='javascript:'>Scout now >></a>");
+             shouldScoutPokes.find("A").click(function(){
+                scoutPokes(notifyPoke);
+             });
+            //  shouldScoutPokes.append("<input type='checkbox'>")
+            //  shouldScoutPokes.find("INPUT").prop("checked", settings.scoutPokes).change(function(){
+            //      settings.scoutPokes = $(this).prop("checked");
+            //      showSideBar();
+            //  });
+             dataDiv.append(shouldScoutPokes);
 
             //Zoom levels
             var zoomLvl = $("<div class='quick'><h4>Zoom level</h4></div>");
