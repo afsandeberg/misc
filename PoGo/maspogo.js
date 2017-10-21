@@ -21,7 +21,11 @@ MaS.PoGo.Settings = {
     massiveNotifySet: [1, 2, 3, 4, 5, 6, 7, 8, 9, 59, 63, 64, 65, 66, 67, 68, 74, 75, 76, 94, 102, 103, 111, 112, 113, 128, 134, 135, 139, 143, 147, 148, 149, 160, 196, 214, 222, 225, 228, 229, 235, 242, 246, 247, 248],
     showOnlySettings: {},
     scoutPokes: false,
-    showLoadData: false
+    showLoadData: false,
+    overrideNotifyToaster: true,
+    addRegularPokesToNotifyMinLvl: 28,
+    addRegularPokesToNotifyMinIv: 60
+
 };
 
 MaS.PoGo.Style = (function () {/*
@@ -73,10 +77,10 @@ MaS.PoGo.Style = (function () {/*
                 }
                 #tableRow > DIV{
                     display: inline-block;
-                    width: 55px;
+                    width: 60px;
                 }
                 #tableRow > DIV:first-child{
-                     width: 100px;
+                     width: 80px;
                 }
                 .pokeCard{
                     padding-left:50px;
@@ -121,6 +125,7 @@ MaS.PoGo.Style = (function () {/*
                 .timeout INPUT[type=text]{
                     font-size:9px; 
                     width:30px;
+                    height:14px;
                     display:inline-block;
                 }
                 #pogoLastUpdate{
@@ -131,6 +136,8 @@ MaS.PoGo.Style = (function () {/*
 
 
 MaS.PoGo.fn = (function () {
+
+    //Internal Variables
     var allPoke;
     var notifyPoke;
     var intervalID = null;
@@ -148,23 +155,17 @@ MaS.PoGo.fn = (function () {
         closeButton: false
     };
     var toastOptBotRig = {
-        positionClass: "toast-bottom-right",
+        positionClass: "toast-bottom-left",
         progressBar: true,
-        closeButton: false
+        closeButton: false,
+        timeout: "1000"
     }
 
-    //Helpers
+    //Poke Helpers
     function loadPokeData() {
 
         //Get all pokemon data
         allPoke = $.map(mapData.pokemons, function (p, k) {
-            return p;
-        });
-
-        //Filter notify pokemons
-        notifyPoke = allPoke.filter(function (p) {
-            return isNotifyPoke(p)
-        }).map(function (p, k) {
             p.Lvl = parseFloat(getPokemonLevel(p.cp_multiplier));
             p.Time = moment(p.disappear_time).format("HH:mm")
             try {
@@ -173,6 +174,11 @@ MaS.PoGo.fn = (function () {
                 p.Iv = -1;
             }
             return p;
+        });
+
+        //Filter notify pokemons
+        notifyPoke = allPoke.filter(function (p) {
+            return isNotifyPoke(p) || (p.Lvl >= settings.addRegularPokesToNotifyMinLvl && p.Iv >= settings.addRegularPokesToNotifyMinIv);
         }).sort(function (a, b) {
             var sortType = settings.sortType.toLowerCase();
 
@@ -218,18 +224,13 @@ MaS.PoGo.fn = (function () {
         })
     }
 
-    function consoleData(poke) {
-        var txt = "Name:" + poke.pokemon_name + ", CP:" + poke.cp + ", Lvl:" + poke.Lvl + ", Iv:" + poke.Iv + "%" + ", Time:" + poke.Time;
-        //console.log(txt)
-        return txt;
-    }
-
     function toggleMarker(p) {
-        if (p.marker.infoWindowIsOpen) {
+        if (p.marker.infoWindowIsOpen && p.marker.infoWindow.anchor !== null) {
             p.marker.persist = false;
             p.marker.infoWindow.close();
             p.marker.infoWindowIsOpen = false;
         } else {
+            if(p.marker.map === null) p.marker.setMap(map);
             p.marker.infoWindow.open(map, p.marker);
             clearSelection();
             updateLabelDiffTime();
@@ -238,6 +239,34 @@ MaS.PoGo.fn = (function () {
             p.marker.setAnimation(null);
             p.marker.animationDisabled = true;
         }
+    }
+
+    function scoutPokes(pokes){
+        var counter = 0;
+        $.each(pokes, function (i, p) {
+            if(p.Iv === -1){
+                scout(p.encounter_id);
+                counter++;
+            }
+        });
+        
+        var msg = (counter > 0) ? "Scouting for " + counter + " pokemons" : "No pokemons to scout for";
+        console.log(msg);
+        toastr.info(msg, "", toastOptBotRig);
+    }
+
+    function refreshMap()    {
+        redrawPokemon(mapData.pokemons);
+        redrawPokemon(mapData.lurePokemons);
+        markerCluster.repaint();
+        updateMap();
+    }
+
+    //Output Helpers
+    function consoleData(poke) {
+        var txt = "Name:" + poke.pokemon_name + ", CP:" + poke.cp + ", Lvl:" + poke.Lvl + ", Iv:" + poke.Iv + "%" + ", Time:" + poke.Time;
+        //console.log(txt)
+        return txt;
     }
 
     function addToasterBtn() {
@@ -267,6 +296,7 @@ MaS.PoGo.fn = (function () {
         $("HEADER#header").append(removeToastersBtn);
     }
 
+    //Overrides
     function overrideLoadRwaData(overwrite){
         if(overwrite && !loadRawDataFunc){
             loadRawDataFunc = window.loadRawData;
@@ -285,20 +315,35 @@ MaS.PoGo.fn = (function () {
         }
     }
 
-    function scoutPokes(pokes){
-        var counter = 0;
-        $.each(pokes, function (i, p) {
-            if(p.Iv === -1){
-                scout(p.encounter_id);
-                counter++;
-            }
-        });
-        
-        var msg = (counter > 0) ? "Scouting for " + counter + " pokemons" : "No pokemons to scout for";
-        console.log(msg);
-        toastr.info(msg, "", toastOptBotRig);
+    function overrideNotifyToaster(){
+        window.sendToastrPokemonNotification = function(e, t, n, a, o) {
+            var i = toastr.info(t, e, {
+                closeButton: !0,
+                positionClass: "toast-top-left",
+                preventDuplicates: !0,
+                onclick: function e() {
+                    centerMap(a, o, 20)
+                },
+                showDuration: "300",
+                hideDuration: "500",
+                timeOut: "3000",
+                extendedTimeOut: "1500",
+                showEasing: "swing",
+                hideEasing: "linear",
+                showMethod: "fadeIn",
+                hideMethod: "fadeOut"
+            });
+            i.removeClass("toast-info"),
+            i.css({
+                "padding-left": "74px",
+                "background-image": "url('./" + n + "')",
+                "background-size": "48px",
+                "background-color": "#0c5952"
+            })
+        }
     }
-
+    
+    //PokeSet Helpers
     function saveCurrentExcludePoke(name){
         var mpStore = JSON.parse(localStorage.getItem(settings.localStorageKey) || '{"auto":[], "manual":[]}');
 
@@ -371,49 +416,9 @@ MaS.PoGo.fn = (function () {
         }
     }
 
-    function refreshMap()    {
-        redrawPokemon(mapData.pokemons);
-        redrawPokemon(mapData.lurePokemons);
-        markerCluster.repaint();
-        updateMap();
-    }
+    //Sidebar Helpers
+    function sidebarSettings(containerDiv){
 
-
-    //Public
-    function showToaster() {
-        //console.log("Load toaster");
-        loadPokeData();
-
-        var tostTxt = "<div class='toasterContainer'>";
-        $.each(notifyPoke, function (i, p) {
-            var txt = consoleData(p);
-            tostTxt += "<div class='toasterRow'><div>" + txt.replace(/, /g, "</div><div>") + "</div></div>";
-        });
-        tostTxt += "</div>"
-        toastr.info(tostTxt, "Prio Pokemons", toastOptFull);
-    }
-
-    function showSideBar() {
-
-        if(reloadCounter > 9){
-            reloadCounter = 0;
-            refreshMap();
-        }
-        else{
-            reloadCounter++
-        }
-
-        //toastr.info("(Re)Loading sidebar...",{progressBar: true, timeOut:1000})  
-        console.log("Load sidebar");
-        loadPokeData();
-
-        //Sidebar markup
-        var containerDiv = $("<div class='gm-style'>");
-
-        //Header
-        containerDiv.append("<center><h3>Prio Pokemons</h3></center>");
-
-        //Settings markup
         var settingsDiv = $("<div id='settings' class='settingsContainer'>");
         settingsDiv.append("Auto-reload <input id='autoRefresh' type='checkbox'> | ")
         settingsDiv.append("<a href='javascript:' id='stopBounce'>Stop bounce</a> | ")
@@ -476,235 +481,346 @@ MaS.PoGo.fn = (function () {
         //     scoutPokes(notifyPoke);
         // }
 
-        //Append settings markup
         containerDiv.append(settingsDiv);
+    }
 
+    function sidebarQuick(dataDiv){
+
+        //Show only markup
+        var showOnly = $("<div class='quick quickShowOnly'>");
+        showOnly.append('<h4>Show only <input type="checkbox" value="showonly" id="showonly"></h4>');
+        showOnly.append('<label><input type="checkbox" value="shownotify">Notify</label>');
+        showOnly.append('<label><input type="checkbox" value="1">1-Bulbasaur</label>');
+        showOnly.append('<label><input type="checkbox" value="4">4-Charmander</label>');
+        showOnly.append('<label><input type="checkbox" value="58">58-Growlithe</label>');
+        showOnly.append('<label><input type="checkbox" value="63">63-Abra</label>');
+        showOnly.append('<label><input type="checkbox" value="66">66-Machop</label>');
+        showOnly.append('<label><input type="checkbox" value="74">74-Geodude</label>');
+        showOnly.append('<label><input type="checkbox" value="111">111-Rhyhorn</label>');
+        showOnly.append('<label><input type="checkbox" value="133">133-Eevee</label>');
+        showOnly.append('<label><input type="checkbox" value="138">138-Omanyte</label>');
+        showOnly.append('<label><input type="checkbox" value="147">147-Dratini</label>');
+        showOnly.append('<label><input type="checkbox" value="246">246-Larvitar</label>');
+        showOnly.append('<label>Custom<input type="text"></label>');
+
+        //Apply show only settings
+        showOnly.find("INPUT[type=checkbox]").each(function(){
+            var box = $(this);
+            box.prop("checked", !!settings.showOnlySettings[box.val()]);
+        });
+        showOnly.find("INPUT[type=text]").val(!settings.showOnlySettings["custom"] ? "" : settings.showOnlySettings["custom"]);
+
+        //Show only actions
+        showOnly.on("change", "INPUT", function () {
+            var isShowOnlyOn = showOnly.find("#showonly").prop("checked");
+            var showOnlyNumbers = [];
+
+            //If master switch changed
+            if ($(this).val() == "showonly") {
+                if(isShowOnlyOn){
+                    saveCurrentExcludePoke();
+                }else{
+                    reapplyLastSavedExcludePoke();
+                }
+            } 
+            
+            //if master switch on (and sub switch changed)
+            if(isShowOnlyOn) {
+                showOnly.find("LABEL INPUT[type=checkbox]:checked").each(function () {
+                    var val = $(this).val();
+                    if (isNaN(val) && val === "shownotify") {
+                        showOnlyNumbers = showOnlyNumbers.concat(notifiedPokemon);
+                    } else if (!isNaN(val)) {
+                        showOnlyNumbers.push(Number(val));
+                    }
+                });
+
+                var customN = showOnly.find("INPUT[type=text]").val().split(",").map(Number).filter(function (a) {
+                    return !isNaN(a) && a !== 0
+                });
+                showOnlyNumbers = showOnlyNumbers.concat(customN);
+
+                showOnlyNumbers = showOnlyNumbers.slice() // slice makes copy of array before sorting it
+                    .sort(function (a, b) {
+                        return a - b;
+                    })
+                    .reduce(function (a, b) {
+                        if (a.slice(-1)[0] !== b) a.push(b); // slice(-1)[0] means last item in array without removing it (like .pop())
+                        return a;
+                    }, []); // this empty array becomes the starting value for a
+            }
+
+            //Apply exclude numbers if any
+            if(showOnlyNumbers.length > 0){
+                var excludeNumbers = allPokeNumbers.filter(function (a) {
+                    return showOnlyNumbers.indexOf(a) === -1;
+                });
+
+                //apply excluded poke at sorce
+                $selectExclude.val(excludeNumbers).change();
+                refreshMap();
+            }
+
+            //Save showonly settings
+            var showOnlySettings= {};
+            showOnly.find("INPUT[type=checkbox]").each(function(){
+                var box = $(this);
+                showOnlySettings[box.val()] = box.prop("checked");
+            });
+            showOnlySettings["custom"] = showOnly.find("INPUT[type=text]").val();
+            settings.showOnlySettings = showOnlySettings;
+            showSideBar();
+        });
+        dataDiv.append(showOnly);
+
+        //Saved exclude set markup
+        var showSaved = $("<div class='quick quickShowSaved'>");
+        var mpStore = JSON.parse(localStorage.getItem(settings.localStorageKey) || '{"auto":[], "manual":[]}');
+
+        showSaved.append('<h4>Exclude sets</h4>');
+        showSaved.append('<div><div>Default + Geodude</div><div><a href="javascript:" data-action="apply" data-setname="default">Apply</a></div></div>');
+        showSaved.append('<div><div>High value only</div><div><a href="javascript:" data-action="apply" data-setname="high">Apply</a></div></div>');
+        showSaved.append('<div><div>Medium</div><div><a href="javascript:" data-action="apply" data-setname="medium">Apply</a></div></div>');
+        showSaved.append('<div><h5 style="display:inline-block;">Saved</h5> | <a href="javascript:" data-action="save">Save current</a></div>');
+        mpStore.manual.forEach(function(i) {
+            showSaved.append('<div><div>' + i.name + '</div><div><a href="javascript:" data-action="apply" data-setname="' + i.name + '">Apply</a></div><div><a href="javascript:" data-action="remove" data-setname="' + i.name + '">Remove</a></div></div>');
+        });
+        showSaved.append('<h5>Auto</h5>');
+        mpStore.auto.forEach(function(i) {
+            var nameDate = i.name.substring(5)
+            if(!isNaN(nameDate)){
+                nameDate = moment(Number(nameDate)).format("YYYY-MM-DD HH:mm:ss");
+            }else
+            {
+                nameDate = i.name;
+            }
+            showSaved.append('<div><div>' + nameDate + '</div><div><a href="javascript:" data-action="apply" data-setname="' + i.name + '">Apply</a></div><div><a href="javascript:" data-action="remove" data-setname="' + i.name + '">Remove</a></div></div>');
+        });
+
+        //Exclude set actions
+        showSaved.find("A").click(function(){
+            var anchor = $(this);
+            if(anchor.data("action") === "apply"){
+                applyExcludePokeSet(anchor.data("setname"));
+            }else if(anchor.data("action") === "remove"){
+                removeExcludePokeSet(anchor.data("setname"));
+                showSideBar();
+            }else if(anchor.data("action") === "save"){
+                var setName = prompt("ExcludeSetName");
+                setName = setName.replace(/[^\d\w]*/, "");
+                if(setName.length > 0){
+                    saveCurrentExcludePoke(setName);
+                    showSideBar();
+                }else{
+                    console.log("Error: exclude set name must be longer than zero");
+                }
+                
+            }
+        });
+        dataDiv.append(showSaved);
+
+        //Default notify set
+        var notifySet = $("<div class='quick'><h4>Notify sets</h4></div>");
+        notifySet.append("<a href='javascript:' data-notifyset='default'>Apply my default notify set</a><br/>");
+        notifySet.append("<a href='javascript:' data-notifyset='massive'>Apply massive notify set</a>");
+        notifySet.find("A").click(function(){
+            var notifyset = $(this).data("notifyset");
+            if(notifyset === "default"){
+                $selectPokemonNotify.val(settings.defaultNotifySet).trigger("change");
+            }else if(notifyset === "massive"){
+                $selectPokemonNotify.val(settings.massiveNotifySet).trigger("change");
+            }
+            
+            refreshMap();
+        });
+        dataDiv.append(notifySet);
+
+        //Reload timmeout
+        var timeout = $("<div class='quick timeout'><b>Reload timeout</b> <input type='text'></div>");
+        timeout.find("INPUT").val(settings.refreshInterval).change(function(){
+            if(!isNaN($(this).val())){
+                settings.refreshInterval = Number($(this).val());
+            } else{
+                $(this).val(settings.refreshInterval)
+            }
+        });
+        dataDiv.append(timeout);
+
+          //Level adds to notify
+          var lvlAdds = $("<div class='quick2 timeout'><b>Lvl adds</b> <input type='text'></div>");
+          lvlAdds.find("INPUT").val(settings.addRegularPokesToNotifyMinLvl).change(function(){
+              if(!isNaN($(this).val())){
+                  settings.addRegularPokesToNotifyMinLvl = Number($(this).val());
+              } else{
+                  $(this).val(settings.addRegularPokesToNotifyMinLvl)
+              }
+          });
+          dataDiv.append(lvlAdds);
+
+            //Iv adds to notify
+            var ivAdds = $("<div class='quick2 timeout'><b>Iv adds</b> <input type='text'></div>");
+            ivAdds.find("INPUT").val(settings.addRegularPokesToNotifyMinIv).change(function(){
+                if(!isNaN($(this).val())){
+                    settings.addRegularPokesToNotifyMinIv = Number($(this).val());
+                } else{
+                    $(this).val(settings.addRegularPokesToNotifyMinIv)
+                }
+            });
+            dataDiv.append(ivAdds);
+
+        //Show sidebar on load
+        var showSidebarOnLoad = $("<div class='quick2'><b>Show sidebar onload</b> <input type='checkbox'></div>");
+        showSidebarOnLoad.find("INPUT").prop("checked", settings.showSideBarOnLoad).change(function(){
+            settings.showSideBarOnLoad = $(this).prop("checked");
+        });
+        dataDiv.append(showSidebarOnLoad);
+
+        //Override loadRawData
+        var showLoadData = $("<div class='quick'><h4 style='display:inline-block;'>Show pokedata</h4> <input type='checkbox'></div>");
+        showLoadData.append("<div id='pogoLastUpdate'>" + pogoLastUpdateText + "</div>");
+        showLoadData.find("INPUT").prop("checked", settings.showLoadData).change(function(){
+            settings.showLoadData = $(this).prop("checked")
+            overrideLoadRwaData(settings.showLoadData);
+        });
+        overrideLoadRwaData(settings.showLoadData);
+        dataDiv.append(showLoadData);
+
+         //Scout pokes
+         var shouldScoutPokes = $("<div class='quick'><h4 style='display:inline-block;'>Scout pokemons with no Iv</h4></div>");
+         shouldScoutPokes.append(" <a href='javascript:'>Scout now >></a>");
+         shouldScoutPokes.find("A").click(function(){
+            scoutPokes(notifyPoke);
+         });
+        //  shouldScoutPokes.append("<input type='checkbox'>")
+        //  shouldScoutPokes.find("INPUT").prop("checked", settings.scoutPokes).change(function(){
+        //      settings.scoutPokes = $(this).prop("checked");
+        //      showSideBar();
+        //  });
+         dataDiv.append(shouldScoutPokes);
+
+        //Zoom levels
+        var zoomLvl = $("<div class='quick'><h4>Zoom level</h4></div>");
+        zoomLvl.append("<div><a href='javascript:' data-zoomlvl='-'>Zoom--</a></div>")
+        zoomLvl.append("<div><a href='javascript:' data-zoomlvl='+'>Zoom++</a></div>")
+        zoomLvl.append("<div><a href='javascript:' data-zoomlvl='10'>Zoom out (lvl 10)</a></div>")
+        zoomLvl.append("<div><a href='javascript:' data-zoomlvl='14'>Zoom in (lvl 14)</a></div>")
+        zoomLvl.append("<div><a href='javascript:' data-zoomlvl='16' data-latlng='59.3250458369,18.070779102100005'>Default zoom and default center</a></div>")
+        zoomLvl.append("<div><a href='javascript:' data-zoomlvl='10' data-latlng='59.32758578719692,18.07140137459146'>Stor Sthlm zoom and center</a></div>")
+        zoomLvl.append("<div><a href='javascript:' data-zoomlvl='14' data-latlng='59.32758578719692,18.071401374591446'>Sthlm city zoom and center</a></div>")
+        zoomLvl.append("<div><a href='javascript:' data-zoomlvl='16' data-latlng='59.37156059938661,18.003938453448868'>MoS zoom and center</a></div>")
+        zoomLvl.find("A").click(function(){
+            var zLvl = $(this).data("zoomlvl");
+            var latlng = $(this).data("latlng");
+            latlng = (typeof latlng === "undefined") ? [] : latlng.split(",");
+            if(isNaN(zLvl)){
+                if(zLvl === "+"){map.setZoom(map.getZoom() + 1);}
+                if(zLvl === "-"){map.setZoom(map.getZoom() - 1);}
+            }else{
+                if(latlng.length === 2){
+                    centerMap(Number(latlng[0]), Number(latlng[1]), Number(zLvl));
+                }else{
+                    map.setZoom(Number(zLvl));
+                }
+            }
+        });
+        dataDiv.append(zoomLvl);
+    }
+
+    function sidebarCard(dataDiv, p){
+        var pokeDiv = $("<div class='pokeCard'>");
+        pokeDiv.append(pokemonLabel(p));
+
+        //Replace notify action with show action
+        pokeDiv.find("DIV.pokemon.links > A[href*='notify']").text("Show").attr("href", "javascript:").click(function () {
+            toggleMarker(p);
+        });
+
+        //Replace exclude action with zoom action
+        pokeDiv.find("DIV.pokemon.links > A[href*='exclude']").text("Zoom").attr("href", "javascript:").click(function () {
+            centerMap(p.latitude, p.longitude, 14);
+            toggleMarker(p);
+        });
+
+        //Append remove card action on regular remove action
+        pokeDiv.find("DIV.pokemon.links > A[href*='remove']").click(function () {
+            pokeDiv.remove();
+        });
+
+        //Add close (remove card) button
+        var closeBtn = $('<div class="pokeCardClose">X</div>');
+        closeBtn.click(function () {
+            pokeDiv.remove();
+        });
+        pokeDiv.append(closeBtn);
+
+        //Add card to sidebar
+        dataDiv.append(pokeDiv);
+    }
+
+    function sidebarTable(dataDiv, poke){
+        var row = $("<div id='tableRow'>");
+        row.append("<div class='pokeName'>" + poke.pokemon_name + "</div>");
+        row.append("<div class='pokeCP'>CP: " + poke.cp + "</div>");
+        row.append("<div class='pokeLvl'>Lvl:" + poke.Lvl + "</div>");
+        row.append("<div class='pokeLvl'>Iv:" + poke.Iv + "%</div>");
+        row.append("<div class='pokeLvl'>Time" + poke.Time + "</div>");
+
+        row.click(function () {
+            toggleMarker(poke);
+        });
+        dataDiv.append(row);
+    }
+
+    //Public
+    function showToaster() {
+        //console.log("Load toaster");
+        loadPokeData();
+
+        var tostTxt = "<div class='toasterContainer'>";
+        $.each(notifyPoke, function (i, p) {
+            var txt = consoleData(p);
+            tostTxt += "<div class='toasterRow'><div>" + txt.replace(/, /g, "</div><div>") + "</div></div>";
+        });
+        tostTxt += "</div>"
+        toastr.info(tostTxt, "Prio Pokemons", toastOptFull);
+    }
+
+    function showSideBar() {
+
+        //Refresh map evry 10 run
+        if(reloadCounter > 9){
+            reloadCounter = 0;
+            refreshMap();
+        }
+        else{
+            reloadCounter++
+        }
+
+        //toastr.info("(Re)Loading sidebar...",{progressBar: true, timeOut:1000})  
+        console.log("Load sidebar");
+
+        //Load and sort data
+        loadPokeData();
+
+        //Sidebar markup
+        var containerDiv = $("<div class='gm-style'>");
+
+        //Header
+        containerDiv.append("<center><h3>Prio Pokemons</h3></center>");
+
+        //Append settings markup
+        sidebarSettings(containerDiv);
+
+        //Data
         var dataDiv = $("<div class='pokeData'>");
 
         //QuickStuff markup
         if (settings.sideBarType === "quick") {
-
-            //Show only markup
-            var showOnly = $("<div class='quick quickShowOnly'>");
-            showOnly.append('<h4>Show only <input type="checkbox" value="showonly" id="showonly"></h4>');
-            showOnly.append('<label><input type="checkbox" value="shownotify">Notify</label>');
-            showOnly.append('<label><input type="checkbox" value="1">1-Bulbasaur</label>');
-            showOnly.append('<label><input type="checkbox" value="4">4-Charmander</label>');
-            showOnly.append('<label><input type="checkbox" value="58">58-Growlithe</label>');
-            showOnly.append('<label><input type="checkbox" value="63">63-Abra</label>');
-            showOnly.append('<label><input type="checkbox" value="66">66-Machop</label>');
-            showOnly.append('<label><input type="checkbox" value="74">74-Geodude</label>');
-            showOnly.append('<label><input type="checkbox" value="111">111-Rhyhorn</label>');
-            showOnly.append('<label><input type="checkbox" value="133">133-Eevee</label>');
-            showOnly.append('<label><input type="checkbox" value="138">138-Omanyte</label>');
-            showOnly.append('<label><input type="checkbox" value="147">147-Dratini</label>');
-            showOnly.append('<label><input type="checkbox" value="246">246-Larvitar</label>');
-            showOnly.append('<label>Custom<input type="text"></label>');
-
-            //Apply show only settings
-            showOnly.find("INPUT[type=checkbox]").each(function(){
-                var box = $(this);
-                box.prop("checked", !!settings.showOnlySettings[box.val()]);
-            });
-            showOnly.find("INPUT[type=text]").val(!settings.showOnlySettings["custom"] ? "" : settings.showOnlySettings["custom"]);
-
-            //Show only actions
-            showOnly.on("change", "INPUT", function () {
-                var isShowOnlyOn = showOnly.find("#showonly").prop("checked");
-                var showOnlyNumbers = [];
-
-                //If master switch changed
-                if ($(this).val() == "showonly") {
-                    if(isShowOnlyOn){
-                        saveCurrentExcludePoke();
-                    }else{
-                        reapplyLastSavedExcludePoke();
-                    }
-                } 
-                
-                //if master switch on (and sub switch changed)
-                if(isShowOnlyOn) {
-                    showOnly.find("LABEL INPUT[type=checkbox]:checked").each(function () {
-                        var val = $(this).val();
-                        if (isNaN(val) && val === "shownotify") {
-                            showOnlyNumbers = showOnlyNumbers.concat(notifiedPokemon);
-                        } else if (!isNaN(val)) {
-                            showOnlyNumbers.push(Number(val));
-                        }
-                    });
-
-                    var customN = showOnly.find("INPUT[type=text]").val().split(",").map(Number).filter(function (a) {
-                        return !isNaN(a) && a !== 0
-                    });
-                    showOnlyNumbers = showOnlyNumbers.concat(customN);
-
-                    showOnlyNumbers = showOnlyNumbers.slice() // slice makes copy of array before sorting it
-                        .sort(function (a, b) {
-                            return a - b;
-                        })
-                        .reduce(function (a, b) {
-                            if (a.slice(-1)[0] !== b) a.push(b); // slice(-1)[0] means last item in array without removing it (like .pop())
-                            return a;
-                        }, []); // this empty array becomes the starting value for a
-                }
-
-                //Apply exclude numbers if any
-                if(showOnlyNumbers.length > 0){
-                    var excludeNumbers = allPokeNumbers.filter(function (a) {
-                        return showOnlyNumbers.indexOf(a) === -1;
-                    });
-
-                    //apply excluded poke at sorce
-                    $selectExclude.val(excludeNumbers).change();
-                    refreshMap();
-                }
-
-                //Save showonly settings
-                var showOnlySettings= {};
-                showOnly.find("INPUT[type=checkbox]").each(function(){
-                    var box = $(this);
-                    showOnlySettings[box.val()] = box.prop("checked");
-                });
-                showOnlySettings["custom"] = showOnly.find("INPUT[type=text]").val();
-                settings.showOnlySettings = showOnlySettings;
-                showSideBar();
-            });
-            dataDiv.append(showOnly);
-
-            //Saved exclude set markup
-            var showSaved = $("<div class='quick quickShowSaved'>");
-            var mpStore = JSON.parse(localStorage.getItem(settings.localStorageKey) || '{"auto":[], "manual":[]}');
-
-            showSaved.append('<h4>Exclude sets</h4>');
-            showSaved.append('<div><div>Default + Geodude</div><div><a href="javascript:" data-action="apply" data-setname="default">Apply</a></div></div>');
-            showSaved.append('<div><div>High value only</div><div><a href="javascript:" data-action="apply" data-setname="high">Apply</a></div></div>');
-            showSaved.append('<div><div>Medium</div><div><a href="javascript:" data-action="apply" data-setname="medium">Apply</a></div></div>');
-            showSaved.append('<div><h5 style="display:inline-block;">Saved</h5> | <a href="javascript:" data-action="save">Save current</a></div>');
-            mpStore.manual.forEach(function(i) {
-                showSaved.append('<div><div>' + i.name + '</div><div><a href="javascript:" data-action="apply" data-setname="' + i.name + '">Apply</a></div><div><a href="javascript:" data-action="remove" data-setname="' + i.name + '">Remove</a></div></div>');
-            });
-            showSaved.append('<h5>Auto</h5>');
-            mpStore.auto.forEach(function(i) {
-                var nameDate = i.name.substring(5)
-                if(!isNaN(nameDate)){
-                    nameDate = moment(Number(nameDate)).format("YYYY-MM-DD HH:mm:ss");
-                }else
-                {
-                    nameDate = i.name;
-                }
-                showSaved.append('<div><div>' + nameDate + '</div><div><a href="javascript:" data-action="apply" data-setname="' + i.name + '">Apply</a></div><div><a href="javascript:" data-action="remove" data-setname="' + i.name + '">Remove</a></div></div>');
-            });
-
-            //Exclude set actions
-            showSaved.find("A").click(function(){
-                var anchor = $(this);
-                if(anchor.data("action") === "apply"){
-                    applyExcludePokeSet(anchor.data("setname"));
-                }else if(anchor.data("action") === "remove"){
-                    removeExcludePokeSet(anchor.data("setname"));
-                    showSideBar();
-                }else if(anchor.data("action") === "save"){
-                    var setName = prompt("ExcludeSetName");
-                    setName = setName.replace(/[^\d\w]*/, "");
-                    if(setName.length > 0){
-                        saveCurrentExcludePoke(setName);
-                        showSideBar();
-                    }else{
-                        console.log("Error: exclude set name must be longer than zero");
-                    }
-                    
-                }
-            });
-            dataDiv.append(showSaved);
-
-            //Default notify set
-            var notifySet = $("<div class='quick'><h4>Notify sets</h4></div>");
-            notifySet.append("<a href='javascript:' data-notifyset='default'>Apply my default notify set</a><br/>");
-            notifySet.append("<a href='javascript:' data-notifyset='massive'>Apply massive notify set</a>");
-            notifySet.find("A").click(function(){
-                var notifyset = $(this).data("notifyset");
-                if(notifyset === "default"){
-                    $selectPokemonNotify.val(settings.defaultNotifySet).trigger("change");
-                }else if(notifyset === "massive"){
-                    $selectPokemonNotify.val(settings.massiveNotifySet).trigger("change");
-                }
-                
-                refreshMap();
-            });
-            dataDiv.append(notifySet);
-
-            //Reload timmeout
-            var timeout = $("<div class='quick timeout'><h4>Reload timeout</h4></div>");
-            timeout.append('<div>Timeout in seconds <input type="text"><div>');
-            timeout.find("INPUT").val(settings.refreshInterval).change(function(){
-                if(!isNaN($(this).val())){
-                    settings.refreshInterval = Number($(this).val());
-                } else{
-                    $(this).val(settings.refreshInterval)
-                }
-            });
-            dataDiv.append(timeout);
-
-            //Show sidebar on load
-            var showSidebarOnLoad = $("<div class='quick'><h4 style='display:inline-block;'>Show sidebar onload</h4></div>");
-            showSidebarOnLoad.append("<input type='checkbox'>");
-            showSidebarOnLoad.find("INPUT").prop("checked", settings.showSideBarOnLoad).change(function(){
-                settings.showSideBarOnLoad = $(this).prop("checked");
-            });
-            dataDiv.append(showSidebarOnLoad);
-
-            //Override loadRawData
-            var showLoadData = $("<div class='quick'><h4 style='display:inline-block;'>Show fetching pokedata</h4></div>");
-            showLoadData.append("<input type='checkbox'>");
-            showLoadData.append("<div id='pogoLastUpdate'>" + pogoLastUpdateText + "</div>");
-            showLoadData.find("INPUT").prop("checked", settings.showLoadData).change(function(){
-                settings.showLoadData = $(this).prop("checked")
-                overrideLoadRwaData(settings.showLoadData);
-            });
-            overrideLoadRwaData(settings.showLoadData);
-            dataDiv.append(showLoadData);
-
-             //Scout pokes
-             var shouldScoutPokes = $("<div class='quick'><h4 style='display:inline-block;'>Scout pokemons with no Iv</h4></div>");
-             shouldScoutPokes.append("<br><a href='javascript:'>Scout now >></a>");
-             shouldScoutPokes.find("A").click(function(){
-                scoutPokes(notifyPoke);
-             });
-            //  shouldScoutPokes.append("<input type='checkbox'>")
-            //  shouldScoutPokes.find("INPUT").prop("checked", settings.scoutPokes).change(function(){
-            //      settings.scoutPokes = $(this).prop("checked");
-            //      showSideBar();
-            //  });
-             dataDiv.append(shouldScoutPokes);
-
-            //Zoom levels
-            var zoomLvl = $("<div class='quick'><h4>Zoom level</h4></div>");
-            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='-'>Zoom--</a></div>")
-            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='+'>Zoom++</a></div>")
-            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='10'>Zoom out (lvl 10)</a></div>")
-            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='14'>Zoom in (lvl 14)</a></div>")
-            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='16' data-latlng='59.3250458369,18.070779102100005'>Default zoom and default center</a></div>")
-            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='10' data-latlng='59.32758578719692,18.07140137459146'>Stor Sthlm zoom and center</a></div>")
-            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='14' data-latlng='59.32758578719692,18.071401374591446'>Sthlm city zoom and center</a></div>")
-            zoomLvl.append("<div><a href='javascript:' data-zoomlvl='16' data-latlng='59.37156059938661,18.003938453448868'>MoS zoom and center</a></div>")
-            zoomLvl.find("A").click(function(){
-                var zLvl = $(this).data("zoomlvl");
-                var latlng = $(this).data("latlng");
-                latlng = (typeof latlng === "undefined") ? [] : latlng.split(",");
-                if(isNaN(zLvl)){
-                    if(zLvl === "+"){map.setZoom(map.getZoom() + 1);}
-                    if(zLvl === "-"){map.setZoom(map.getZoom() - 1);}
-                }else{
-                    if(latlng.length === 2){
-                        centerMap(Number(latlng[0]), Number(latlng[1]), Number(zLvl));
-                    }else{
-                        map.setZoom(Number(zLvl));
-                    }
-                }
-            });
-            dataDiv.append(zoomLvl);
+            sidebarQuick(dataDiv);
 
         } else {
+
+            //dataDiv.append("<div></div>");
 
             //Pokes markup
             $.each(notifyPoke, function (i, p) {
@@ -714,45 +830,11 @@ MaS.PoGo.fn = (function () {
 
                     //Table markup
                     if (settings.sideBarType === "table") {
-                        var table = consoleData(p);
-                        table = $("<div id='tableRow'><div>" + table.replace(/\, /g, "</div><div>") + "</div></div>");
-                        table.click(function () {
-                            toggleMarker(p);
-                        });
-                        dataDiv.append(table);
-
+                       sidebarTable(dataDiv, p);
                     }
                     //Card markup
                     else {
-
-                        var pokeDiv = $("<div class='pokeCard'>");
-                        pokeDiv.append(pokemonLabel(this));
-
-                        //Replace notify action with show action
-                        pokeDiv.find("DIV.pokemon.links > A[href*='notify']").text("Show").attr("href", "javascript:").click(function () {
-                            toggleMarker(p);
-                        });
-
-                        //Replace exclude action with zoom action
-                        pokeDiv.find("DIV.pokemon.links > A[href*='exclude']").text("Zoom").attr("href", "javascript:").click(function () {
-                            centerMap(p.latitude, p.longitude, 14);
-                            toggleMarker(p);
-                        });
-
-                        //Append remove card action on regular remove action
-                        pokeDiv.find("DIV.pokemon.links > A[href*='remove']").click(function () {
-                            pokeDiv.remove();
-                        });
-
-                        //Add close (remove card) button
-                        var closeBtn = $('<div class="pokeCardClose">X</div>');
-                        closeBtn.click(function () {
-                            pokeDiv.remove();
-                        });
-                        pokeDiv.append(closeBtn);
-
-                        //Add card to sidebar
-                        dataDiv.append(pokeDiv);
+                     sidebarCard(dataDiv, p);
                     }
                 }
             });
@@ -779,11 +861,12 @@ MaS.PoGo.fn = (function () {
         if(!!storeSetting){
             settings = $.extend(true, settings, storeSetting);
         }
-        toastr.clear();
+        //toastr.clear();
         if (settings.showToasterBtn) addToasterBtn();
         if (settings.showSideBarBtn) addSideBarBtn();
         if (settings.showRemoveToastersBtn) addRemoveToastersBtn();
         if (settings.showSideBarOnLoad) showSideBar();
+        if (settings.overrideNotifyToaster) overrideNotifyToaster();
         $("HEAD").append(MaS.PoGo.Style);
     }
 

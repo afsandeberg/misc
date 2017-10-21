@@ -9,7 +9,7 @@
 
                 // Handle memory leak in IE
                 s.onload = s.onreadystatechange = null;
-                toastr.info("MaSPogo loaded", "", {positionClass: "toast-bottom-right", progressBar:true});
+                toastr.info("MaSPogo loaded", "", {positionClass: "toast-bottom-left", progressBar:true});
                 
                 console.log("MaSPoGo loaded")
             }
@@ -22,7 +22,7 @@
     }
     else
     {
-        toastr.warning("MaSPogo already loaded", "", {positionClass: "toast-bottom-right", progressBar:true});
+        toastr.warning("MaSPogo already loaded", "", {positionClass: "toast-bottom-left", progressBar:true});
         console.log("MaSPogo already loaded");
     }
 })();
