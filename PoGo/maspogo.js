@@ -24,8 +24,8 @@ MaS.PoGo.Settings = {
     showLoadData: false,
     overrideNotifyToaster: true,
     addRegularPokesToNotifyMinLvl: 28,
-    addRegularPokesToNotifyMinIv: 60
-
+    addRegularPokesToNotifyMinIv: 60,
+    showLogData: false
 };
 
 MaS.PoGo.Style = (function () {/*
@@ -164,12 +164,16 @@ MaS.PoGo.fn = (function () {
     //Poke Helpers
     function loadPokeData() {
 
+        var t0 = performance.now();
+
         //Get all pokemon data
         allPoke = $.map(mapData.pokemons, function (p, k) {
-            p.Lvl = parseFloat(getPokemonLevel(p.cp_multiplier));
+            p.Lvl = (p.cp_multiplier !== null) ? parseFloat(getPokemonLevel(p.cp_multiplier)) : -1;
             p.Time = moment(p.disappear_time).format("HH:mm")
             try {
-                p.Iv = parseFloat(getIv(p.individual_attack, p.individual_defense, p.individual_stamina).toFixed(1));
+                if(p.individual_attack !== null && p.individual_defense !== null && p.individual_stamina !== null){
+                    p.Iv = parseFloat(getIv(p.individual_attack, p.individual_defense, p.individual_stamina).toFixed(1));
+                }
             } catch (a) {
                 p.Iv = -1;
             }
@@ -199,6 +203,9 @@ MaS.PoGo.fn = (function () {
             }
             return a.pokemon_id - b.pokemon_id
         });
+
+        var t1 = performance.now();
+        console.log2("Assemble pokemons took " + (t1 - t0) + " milliseconds.")
     }
 
     function autoRefresh() {
@@ -230,7 +237,10 @@ MaS.PoGo.fn = (function () {
             p.marker.infoWindow.close();
             p.marker.infoWindowIsOpen = false;
         } else {
-            if(p.marker.map === null) p.marker.setMap(map);
+            if(p.marker.map === null) {
+                p.marker.setMap(map);
+                markerCluster.redraw();
+            }
             p.marker.infoWindow.open(map, p.marker);
             clearSelection();
             updateLabelDiffTime();
@@ -251,7 +261,7 @@ MaS.PoGo.fn = (function () {
         });
         
         var msg = (counter > 0) ? "Scouting for " + counter + " pokemons" : "No pokemons to scout for";
-        console.log(msg);
+        console.log2(msg);
         toastr.info(msg, "", toastOptBotRig);
     }
 
@@ -265,8 +275,14 @@ MaS.PoGo.fn = (function () {
     //Output Helpers
     function consoleData(poke) {
         var txt = "Name:" + poke.pokemon_name + ", CP:" + poke.cp + ", Lvl:" + poke.Lvl + ", Iv:" + poke.Iv + "%" + ", Time:" + poke.Time;
-        //console.log(txt)
+        //console.log2(txt)
         return txt;
+    }
+
+    window.console.log2 = function(msg){
+        if(settings.showLogData){
+            console.log(msg);
+        }
     }
 
     function addToasterBtn() {
@@ -301,10 +317,10 @@ MaS.PoGo.fn = (function () {
         if(overwrite && !loadRawDataFunc){
             loadRawDataFunc = window.loadRawData;
             window.loadRawData = function(){
-                //console.log("Loading data...")
+                //console.log2("Loading data...")
                 return loadRawDataFunc().done(function(e){
                     pogoLastUpdateText = "Fetched " + e.pokemons.length + " pokemons at " + moment(e.timestamp).format("HH:mm:ss");
-                    console.log(pogoLastUpdateText);
+                    console.log2(pogoLastUpdateText);
                     $("#pogoLastUpdate").html(pogoLastUpdateText);
                 });
             }
@@ -401,7 +417,7 @@ MaS.PoGo.fn = (function () {
             $selectExclude.val(excludeSet[0].excludedPoke).change();
             refreshMap();
         }else{
-            console.log("Error-applyExcludePokeSet: no saved exclude set with name " + name + " found");
+            console.log2("Error-applyExcludePokeSet: no saved exclude set with name " + name + " found");
         }
     }
 
@@ -412,7 +428,7 @@ MaS.PoGo.fn = (function () {
             refreshMap();
         }
         else{
-            console.log("Error-reaplyLastSavedExcludePoke: no saved exclude set")
+            console.log2("Error-reaplyLastSavedExcludePoke: no saved exclude set")
         }
     }
 
@@ -612,7 +628,7 @@ MaS.PoGo.fn = (function () {
                     saveCurrentExcludePoke(setName);
                     showSideBar();
                 }else{
-                    console.log("Error: exclude set name must be longer than zero");
+                    console.log2("Error: exclude set name must be longer than zero");
                 }
                 
             }
@@ -773,7 +789,7 @@ MaS.PoGo.fn = (function () {
 
     //Public
     function showToaster() {
-        //console.log("Load toaster");
+        //console.log2("Load toaster");
         loadPokeData();
 
         var tostTxt = "<div class='toasterContainer'>";
@@ -786,6 +802,7 @@ MaS.PoGo.fn = (function () {
     }
 
     function showSideBar() {
+        var t0 = performance.now();
 
         //Refresh map evry 10 run
         if(reloadCounter > 9){
@@ -797,7 +814,7 @@ MaS.PoGo.fn = (function () {
         }
 
         //toastr.info("(Re)Loading sidebar...",{progressBar: true, timeOut:1000})  
-        console.log("Load sidebar");
+        console.log2("Load sidebar");
 
         //Load and sort data
         loadPokeData();
@@ -854,6 +871,8 @@ MaS.PoGo.fn = (function () {
             $("#gym-details").removeClass("visible")
         });
 
+        var t1 = performance.now();
+        console.log2("Load sidebar took " + (t1 - t0) + " milliseconds.")
     }
 
     function init() {
@@ -877,7 +896,8 @@ MaS.PoGo.fn = (function () {
     return {
         Init: init,
         ShowToaster: showToaster,
-        ShowSideBar: showSideBar
+        ShowSideBar: showSideBar,
+        CurrentSettings: settings
     }
 })();
 
