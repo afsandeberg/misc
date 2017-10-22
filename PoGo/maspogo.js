@@ -145,7 +145,7 @@ MaS.PoGo.fn = (function () {
     var notifyPoke;
     var intervalID = null;
     var allPokeData = $.map(idToPokemon, function (a, b) { a.id = b; return a; });
-    var allPokeNumbers = (function () { var all = []; for (var i = 1; i <= 248; i++) { all.push(i); } return all; })(); //all Poke numbers upp to Lugia
+    var allPokeNumbers = (function () { var all = []; for (var i = 1; i <= 493; i++) { all.push(i); } return all; })(); //all Poke numbers
     var settings = $.extend(true, {}, MaS.PoGo.Settings);
     var reloadCounter = 0;
     var loadRawDataFunc;
@@ -776,6 +776,7 @@ MaS.PoGo.fn = (function () {
             } else {
                 if (latlng.length === 2) {
                     centerMap(Number(latlng[0]), Number(latlng[1]), Number(zLvl));
+                    map.setZoom(Number(zLvl));
                 } else {
                     map.setZoom(Number(zLvl));
                 }
