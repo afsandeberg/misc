@@ -176,6 +176,8 @@ MaS.PoGo.fn = (function () {
             try {
                 if (p.individual_attack !== null && p.individual_defense !== null && p.individual_stamina !== null) {
                     p.Iv = parseFloat(getIv(p.individual_attack, p.individual_defense, p.individual_stamina).toFixed(1));
+                } else{
+                    p.Iv = -1;
                 }
             } catch (a) {
                 p.Iv = -1;
