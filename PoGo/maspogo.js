@@ -17,14 +17,14 @@ MaS.PoGo.Settings = {
     localStorageSettingsKey: "MaSPoGoSettings",
     highValuePokeSet: [7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 60, 61, 62, 69, 70, 71, 72, 73, 77, 78, 79, 80, 81, 82, 84, 85, 86, 87, 88, 90, 91, 92, 93, 95, 96, 97, 98, 99, 100, 101, 104, 105, 106, 107, 108, 109, 110, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 137, 138, 139, 140, 141, 142, 152, 153, 158, 159, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 198, 199, 200, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 215, 216, 218, 219, 220, 221, 223, 224, 226, 227, 228, 229, 230, 231, 233, 234, 236, 237, 238, 239, 240, 241],
     mediumValuePokeSet: [10, 11, 12, 13, 14, 16, 17, 19, 20, 21, 22, 29, 32, 33, 35, 41, 43, 46, 48, 50, 54, 55, 60, 61, 69, 72, 77, 79, 81, 90, 96, 98, 100, 116, 118, 120, 122, 161, 162, 163, 164, 165, 166, 167, 177, 178, 183, 190, 194, 198, 202, 215, 218, 220, 223],
-    defaultNotifySet: [6, 65, 68, 76, 94, 103, 113, 128, 134, 143, 149, 196, 214, 242, 247, 248],
+    defaultNotifySet: [3, 6, 65, 68, 76, 94, 103, 113, 128, 143, 149, 214, 242, 248],
     massiveNotifySet: [1, 2, 3, 4, 5, 6, 7, 8, 9, 59, 63, 64, 65, 66, 67, 68, 74, 75, 76, 94, 102, 103, 111, 112, 113, 128, 134, 135, 139, 143, 147, 148, 149, 160, 196, 214, 222, 225, 228, 229, 235, 242, 246, 247, 248],
     showOnlySettings: {},
     scoutPokes: false,
     showLoadData: false,
     overrideNotifyToaster: true,
     addRegularPokesToNotifyMinLvl: 28,
-    addRegularPokesToNotifyMinIv: 60,
+    addRegularPokesToNotifyMinIv: 70,
     showLogData: false
 };
 
@@ -373,7 +373,7 @@ MaS.PoGo.fn = (function () {
 
         if (typeof name === "undefined") {
             name = "auto-" + (new Date()).getTime();
-            if (mpStore.auto.length > 10) {
+            if (mpStore.auto.length > 6) {
                 mpStore.auto.pop();
             }
             mpStore.auto.unshift({
@@ -535,11 +535,18 @@ MaS.PoGo.fn = (function () {
         showOnly.append('<label><input type="checkbox" value="63">63-Abra</label>');
         showOnly.append('<label><input type="checkbox" value="66">66-Machop</label>');
         showOnly.append('<label><input type="checkbox" value="74">74-Geodude</label>');
+        showOnly.append('<label><input type="checkbox" value="75">75-Graveler</label>');
+        showOnly.append('<label><input type="checkbox" value="92">92-Gastly</label>');
+        showOnly.append('<label><input type="checkbox" value="102">102-Exeggcute</label>');
         showOnly.append('<label><input type="checkbox" value="111">111-Rhyhorn</label>');
         showOnly.append('<label><input type="checkbox" value="133">133-Eevee</label>');
         showOnly.append('<label><input type="checkbox" value="138">138-Omanyte</label>');
         showOnly.append('<label><input type="checkbox" value="147">147-Dratini</label>');
+        showOnly.append('<label><input type="checkbox" value="148">148-Dragonair</label>');
+        showOnly.append('<label><input type="checkbox" value="228">228-Houndour</label>');
         showOnly.append('<label><input type="checkbox" value="246">246-Larvitar</label>');
+        showOnly.append('<label><input type="checkbox" value="247">247-Pupitar</label>');
+        
         showOnly.append('<label>Custom<input type="text"></label>');
 
         //Apply show only settings
