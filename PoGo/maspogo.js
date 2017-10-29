@@ -373,7 +373,7 @@ MaS.PoGo.fn = (function () {
 
         if (typeof name === "undefined") {
             name = "auto-" + (new Date()).getTime();
-            if (mpStore.auto.length > 6) {
+            if (mpStore.auto.length > 4) {
                 mpStore.auto.pop();
             }
             mpStore.auto.unshift({
@@ -529,23 +529,23 @@ MaS.PoGo.fn = (function () {
         var showOnly = $("<div class='quick quickShowOnly'>");
         showOnly.append('<h4>Show only <input type="checkbox" value="showonly" id="showonly"></h4>');
         showOnly.append('<label><input type="checkbox" value="shownotify">Notify</label>');
-        showOnly.append('<label><input type="checkbox" value="1">1-Bulbasaur</label>');
-        showOnly.append('<label><input type="checkbox" value="4">4-Charmander</label>');
-        showOnly.append('<label><input type="checkbox" value="58">58-Growlithe</label>');
-        showOnly.append('<label><input type="checkbox" value="63">63-Abra</label>');
-        showOnly.append('<label><input type="checkbox" value="66">66-Machop</label>');
-        showOnly.append('<label><input type="checkbox" value="74">74-Geodude</label>');
-        showOnly.append('<label><input type="checkbox" value="75">75-Graveler</label>');
-        showOnly.append('<label><input type="checkbox" value="92">92-Gastly</label>');
-        showOnly.append('<label><input type="checkbox" value="102">102-Exeggcute</label>');
-        showOnly.append('<label><input type="checkbox" value="111">111-Rhyhorn</label>');
-        showOnly.append('<label><input type="checkbox" value="133">133-Eevee</label>');
-        showOnly.append('<label><input type="checkbox" value="138">138-Omanyte</label>');
-        showOnly.append('<label><input type="checkbox" value="147">147-Dratini</label>');
-        showOnly.append('<label><input type="checkbox" value="148">148-Dragonair</label>');
-        showOnly.append('<label><input type="checkbox" value="228">228-Houndour</label>');
-        showOnly.append('<label><input type="checkbox" value="246">246-Larvitar</label>');
-        showOnly.append('<label><input type="checkbox" value="247">247-Pupitar</label>');
+        showOnly.append('<label><input type="checkbox" value="1,2,3">1-Bulbasaur+</label>');
+        showOnly.append('<label><input type="checkbox" value="4,5,6">4-Charmander+</label>');
+        showOnly.append('<label><input type="checkbox" value="58,59">58-Growlithe+</label>');
+        showOnly.append('<label><input type="checkbox" value="63,64,65">63-Abra+</label>');
+        showOnly.append('<label><input type="checkbox" value="66,67,68">66-Machop+</label>');
+        showOnly.append('<label><input type="checkbox" value="74,75,76">74-Geodude+</label>');
+        showOnly.append('<label><input type="checkbox" value="92,93,94">92-Gastly+</label>');
+        showOnly.append('<label><input type="checkbox" value="102,103">102-Exeggcute+</label>');
+        showOnly.append('<label><input type="checkbox" value="111,112">111-Rhyhorn+</label>');
+        showOnly.append('<label><input type="checkbox" value="113,242">113-Chansey+</label>');
+        showOnly.append('<label><input type="checkbox" value="131">131-Lapras</label>');
+        showOnly.append('<label><input type="checkbox" value="133,134,135,136,196,197">133-Eevee+</label>');
+        showOnly.append('<label><input type="checkbox" value="138,139">138-Omanyte+</label>');
+        showOnly.append('<label><input type="checkbox" value="143">143-Snorlax</label>');
+        showOnly.append('<label><input type="checkbox" value="147,148,149">147-Dratini+</label>');
+        showOnly.append('<label><input type="checkbox" value="228,229">228-Houndour+</label>');
+        showOnly.append('<label><input type="checkbox" value="246,247,248">246-Larvitar+</label>');
         
         showOnly.append('<label>Custom<input type="text"></label>');
 
@@ -573,12 +573,14 @@ MaS.PoGo.fn = (function () {
             //if master switch on (and sub switch changed)
             if (isShowOnlyOn) {
                 showOnly.find("LABEL INPUT[type=checkbox]:checked").each(function () {
-                    var val = $(this).val();
-                    if (isNaN(val) && val === "shownotify") {
-                        showOnlyNumbers = showOnlyNumbers.concat(notifiedPokemon);
-                    } else if (!isNaN(val)) {
-                        showOnlyNumbers.push(Number(val));
-                    }
+                    var valArray = $(this).val().split(",");
+                    valArray.forEach(function(val,i){
+                        if (isNaN(val) && val === "shownotify") {
+                            showOnlyNumbers = showOnlyNumbers.concat(notifiedPokemon);
+                        } else if (!isNaN(val)) {
+                            showOnlyNumbers.push(Number(val));
+                        }
+                    });
                 });
 
                 var customN = showOnly.find("INPUT[type=text]").val().split(",").map(Number).filter(function (a) {
