@@ -757,18 +757,18 @@ MaS.PoGo.fn = (function () {
         dataDiv.append(showLoadData);
 
         //Scout pokes
-        var shouldScoutPokes = $("<div class='quick'><h4 style='display:inline-block;'>Scout pokemons with no Iv</h4></div>");
-        shouldScoutPokes.append(" <a href='javascript:'>Scout now >></a>");
-        shouldScoutPokes.find("A").click(function () {
-            scoutPokes(notifyPoke);
-        });
+        // var shouldScoutPokes = $("<div class='quick'><h4 style='display:inline-block;'>Scout pokemons with no Iv</h4></div>");
+        // shouldScoutPokes.append(" <a href='javascript:'>Scout now >></a>");
+        // shouldScoutPokes.find("A").click(function () {
+        //     scoutPokes(notifyPoke);
+        // });
 
         //  shouldScoutPokes.append("<input type='checkbox'>")
         //  shouldScoutPokes.find("INPUT").prop("checked", settings.scoutPokes).change(function(){
         //      settings.scoutPokes = $(this).prop("checked");
         //      showSideBar();
         //  });
-        dataDiv.append(shouldScoutPokes);
+        // dataDiv.append(shouldScoutPokes);
 
         //Zoom levels
         var zoomLvl = $("<div class='quick'><h4>Zoom level</h4></div>");
