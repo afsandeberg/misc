@@ -426,7 +426,7 @@ MaS.PoGo.fn = (function () {
             refreshMap();
             return;
         }
-        if (name === "ivChecked") {
+        if (name === "ivchecked") {
             $selectExclude.val(settings.ivChechedPokeSet).change();
             refreshMap();
             return;
@@ -635,7 +635,7 @@ MaS.PoGo.fn = (function () {
         showSaved.append('<div><div>Default + Geodude</div><div><a href="javascript:" data-action="apply" data-setname="default">Apply</a></div></div>');
         showSaved.append('<div><div>High value only</div><div><a href="javascript:" data-action="apply" data-setname="high">Apply</a></div></div>');
         showSaved.append('<div><div>Medium</div><div><a href="javascript:" data-action="apply" data-setname="medium">Apply</a></div></div>');
-        showSaved.append('<div><div>IV Checked</div><div><a href="javascript:" data-action="apply" data-setname="ivChecked">Apply</a></div></div>');
+        showSaved.append('<div><div>IV Checked</div><div><a href="javascript:" data-action="apply" data-setname="ivchecked">Apply</a></div></div>');
         showSaved.append('<div><h5 style="display:inline-block;">Saved</h5> | <a href="javascript:" data-action="save">Save current</a></div>');
         mpStore.manual.forEach(function (i) {
             showSaved.append('<div><div>' + i.name + '</div><div><a href="javascript:" data-action="apply" data-setname="' + i.name + '">Apply</a></div><div><a href="javascript:" data-action="remove" data-setname="' + i.name + '">Remove</a></div></div>');
