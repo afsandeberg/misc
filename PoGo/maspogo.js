@@ -553,7 +553,7 @@ MaS.PoGo.fn = (function () {
         showOnly.append('<label><input type="checkbox" value="147,148,149">147-Dratini+</label>');
         //showOnly.append('<label><input type="checkbox" value="228,229">228-Houndour+</label>');
         showOnly.append('<label><input type="checkbox" value="246,247,248">246-Larvitar+</label>');
-        showOnly.append('<label><input type="checkbox" value="1,2,3,4,5,6,7,8,9,25,26,63,64,65,66,67,68,74,75,76,93,94,95,102,103,111,112,113,114,123,129,130,131,133,134,135,136,137,143,147,148,149,154,157,160,175,176,179,180,181,201,212,242,246,247,248">Iv Checked</label>');
+        showOnly.append('<label><input type="checkbox" value="1,2,3,4,5,6,7,8,9,25,26,63,64,65,66,67,68,74,75,76,93,94,95,102,103,111,112,113,114,123,129,130,131,133,134,135,136,137,143,147,148,149,154,157,160,175,176,179,180,181,201,212,242,246,247,248">IvChecked+</label>');
         
         showOnly.append('<label>Custom<input type="text"></label>');
 
