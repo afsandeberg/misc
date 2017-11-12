@@ -279,6 +279,7 @@ MaS.PoGo.fn = (function () {
     }
 
     function refreshMap() {
+        timestamp = undefined;
         redrawPokemon(mapData.pokemons);
         redrawPokemon(mapData.lurePokemons);
         markerCluster.repaint();
@@ -506,7 +507,6 @@ MaS.PoGo.fn = (function () {
             settings = $.extend(true, {}, MaS.PoGo.Settings);
             //unHide(notifyPoke);
             mapData.pokemons = {};
-            timestamp = undefined;
             refreshMap();
         });
 
