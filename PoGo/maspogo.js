@@ -771,7 +771,7 @@ MaS.PoGo.fn = (function () {
         //      settings.scoutPokes = $(this).prop("checked");
         //      showSideBar();
         //  });
-        // dataDiv.append(shouldScoutPokes);
+        dataDiv.append(shouldScoutPokes);
 
         //Zoom levels
         var zoomLvl = $("<div class='quick'><h4>Zoom level</h4></div>");
