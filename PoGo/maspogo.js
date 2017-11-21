@@ -27,6 +27,7 @@ MaS.PoGo.Settings = {
     overrideNotifyToaster: true,
     addRegularPokesToNotifyMinLvl: 28,
     addRegularPokesToNotifyMinIv: 70,
+    addRegularPokesToNotifyNr: [],
     showLogData: false
 };
 
@@ -127,7 +128,7 @@ MaS.PoGo.Style = (function () {/*
                     .quickShowSaved>DIV DIV:first-child{
                         width: 120px;
                     }
-                    .timeout INPUT[type=text]{
+                    .smallinput INPUT[type=text]{
                         font-size:9px; 
                         width:30px;
                         height:14px;
@@ -135,6 +136,10 @@ MaS.PoGo.Style = (function () {/*
                     }
                     #pogoLastUpdate, #pogoData{
                         font-size:9px;
+                    }
+                    .inline{
+                        display:inline-block;
+                        margin-right:2px;
                     }
                 </style>     
              */}).toString().match(/[^]*\/\*([^]*)\*\/\}$/)[1];
@@ -189,7 +194,7 @@ MaS.PoGo.fn = (function () {
 
         //Filter notify pokemons
         notifyPoke = allPoke.filter(function (p) {
-            return isNotifyPoke(p) || (p.Lvl >= settings.addRegularPokesToNotifyMinLvl && p.Iv >= settings.addRegularPokesToNotifyMinIv);
+            return isNotifyPoke(p) || (p.Lvl >= settings.addRegularPokesToNotifyMinLvl && p.Iv >= settings.addRegularPokesToNotifyMinIv) || settings.addRegularPokesToNotifyNr.indexOf(p.pokemon_id) !== -1;
         }).sort(function (a, b) {
             var sortType = settings.sortType.toLowerCase();
 
@@ -692,8 +697,15 @@ MaS.PoGo.fn = (function () {
         });
         dataDiv.append(notifySet);
 
+        //Show sidebar on load
+        var showSidebarOnLoad = $("<div class='quick'><h4>Sidebar settings</h4></div><div><b>Show sidebar onload</b> <input type='checkbox'></div>");
+        showSidebarOnLoad.find("INPUT").prop("checked", settings.showSideBarOnLoad).change(function () {
+            settings.showSideBarOnLoad = $(this).prop("checked");
+        });
+        dataDiv.append(showSidebarOnLoad);
+
         //Reload timmeout
-        var timeout = $("<div class='quick timeout'><b>Reload timeout</b> <input type='text'></div>");
+        var timeout = $("<div class='smallinput' style='margin-bottom:10px;'><b>Reload timeout</b> <input type='text'></div>");
         timeout.find("INPUT").val(settings.refreshInterval).change(function () {
             if (!isNaN($(this).val())) {
                 settings.refreshInterval = Number($(this).val());
@@ -704,7 +716,7 @@ MaS.PoGo.fn = (function () {
         dataDiv.append(timeout);
 
         //Level adds to notify
-        var lvlAdds = $("<div class='quick2 timeout'><b>Lvl adds</b> <input type='text'></div>");
+        var lvlAdds = $("<div class='inline smallinput'><b>Nr adds</b> <input type='text' ></div>");
         lvlAdds.find("INPUT").val(settings.addRegularPokesToNotifyMinLvl).change(function () {
             if (!isNaN($(this).val())) {
                 settings.addRegularPokesToNotifyMinLvl = Number($(this).val());
@@ -715,7 +727,7 @@ MaS.PoGo.fn = (function () {
         dataDiv.append(lvlAdds);
 
         //Iv adds to notify
-        var ivAdds = $("<div class='quick2 timeout'><b>Iv adds</b> <input type='text'></div>");
+        var ivAdds = $("<div class='inline smallinput'><b>Iv adds</b> <input type='text'></div>");
         ivAdds.find("INPUT").val(settings.addRegularPokesToNotifyMinIv).change(function () {
             if (!isNaN($(this).val())) {
                 settings.addRegularPokesToNotifyMinIv = Number($(this).val());
@@ -725,8 +737,16 @@ MaS.PoGo.fn = (function () {
         });
         dataDiv.append(ivAdds);
 
+        //Nr adds to notify
+        var nrAdds = $("<div class='inline smallinput'><b>Nr adds</b> <input type='text' style='width:60px;'></div>");
+        nrAdds.find("INPUT").val(settings.addRegularPokesToNotifyNr.join(",")).change(function () {
+            var nr = $(this).val().split(",").filter(function(a){return !isNaN(a);}).map(function(a){return parseInt(a);});
+            settings.addRegularPokesToNotifyNr = nr;
+        });
+        dataDiv.append(nrAdds);
+
         //Set max zoom (when to cluster pokes)
-        var maxZoom = $("<div class='quick2 timeout'><b>Zoom level to start clustering</b> <input type='text'> (current zoom level: " + map.getZoom() +  ")</div>");
+        var maxZoom = $("<div class='smallinput'><b>Zoom level to start clustering</b> <input type='text'> (current zoom level: " + map.getZoom() +  ")</div>");
         maxZoom.find("INPUT").val(markerCluster.getMaxZoom()).change(function () {
             if (!isNaN($(this).val())) {
                 markerCluster.setMaxZoom(Number($(this).val()));
@@ -736,13 +756,6 @@ MaS.PoGo.fn = (function () {
             }
         });
         dataDiv.append(maxZoom);
-
-        //Show sidebar on load
-        var showSidebarOnLoad = $("<div class='quick2'><b>Show sidebar onload</b> <input type='checkbox'></div>");
-        showSidebarOnLoad.find("INPUT").prop("checked", settings.showSideBarOnLoad).change(function () {
-            settings.showSideBarOnLoad = $(this).prop("checked");
-        });
-        dataDiv.append(showSidebarOnLoad);
 
         //Show loaded data
         var showLoadData = $("<div class='quick'><h4 style='display:inline-block;'>Show pokedata</h4> <input type='checkbox'></div>");
