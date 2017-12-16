@@ -151,12 +151,13 @@ MaS.PoGo.fn = (function () {
     var allPoke;
     var notifyPoke;
     var intervalID = null;
-    var allPokeData = $.map(idToPokemon, function (a, b) { a.id = b; return a; });
+    var allPokeData = Object.values(idToPokemon); // $.map(idToPokemon, function (a, b) { a.id = b; return a; });
     var allPokeNumbers = (function () { var all = []; for (var i = 1; i <= 493; i++) { all.push(i); } return all; })(); //all Poke numbers
     var settings = $.extend(true, {}, MaS.PoGo.Settings);
     var reloadCounter = 0;
     var loadRawDataFunc;
     var pogoLastUpdateText = "No fetch has occurred"
+    var showOnlyBoxes = "display";
 
     //Const
     var toastOptFull = {
@@ -540,29 +541,57 @@ MaS.PoGo.fn = (function () {
 
         //Show only markup
         var showOnly = $("<div class='quick quickShowOnly'>");
-        showOnly.append('<h4>Show only <input type="checkbox" value="showonly" id="showonly"></h4>');
-        showOnly.append('<label><input type="checkbox" value="shownotify">Notify</label>');
-        showOnly.append('<label><input type="checkbox" value="1,2,3">1-Bulbasaur+</label>');
-        showOnly.append('<label><input type="checkbox" value="4,5,6">4-Charmander+</label>');
-        // showOnly.append('<label><input type="checkbox" value="58,59">58-Growlithe+</label>');
-        showOnly.append('<label><input type="checkbox" value="252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378,379,380,381,382,383,384,385,386">Gen 3</label>');
-        showOnly.append('<label><input type="checkbox" value="63,64,65">63-Abra+</label>');
-        showOnly.append('<label><input type="checkbox" value="66,67,68">66-Machop+</label>');
-        showOnly.append('<label><input type="checkbox" value="74,75,76">74-Geodude+</label>');
-        showOnly.append('<label><input type="checkbox" value="92,93,94">92-Gastly+</label>');
-        showOnly.append('<label><input type="checkbox" value="102,103">102-Exeggcute+</label>');
-        showOnly.append('<label><input type="checkbox" value="111,112">111-Rhyhorn+</label>');
-        showOnly.append('<label><input type="checkbox" value="113,242">113-Chansey+</label>');
-        showOnly.append('<label><input type="checkbox" value="131">131-Lapras</label>');
-        showOnly.append('<label><input type="checkbox" value="133,134,135,136,196,197">133-Eevee+</label>');
-        showOnly.append('<label><input type="checkbox" value="138,139">138-Omanyte+</label>');
-        showOnly.append('<label><input type="checkbox" value="143">143-Snorlax</label>');
-        showOnly.append('<label><input type="checkbox" value="147,148,149">147-Dratini+</label>');
-        //showOnly.append('<label><input type="checkbox" value="228,229">228-Houndour+</label>');
-        showOnly.append('<label><input type="checkbox" value="246,247,248">246-Larvitar+</label>');
-        showOnly.append('<label><input type="checkbox" value="1,2,3,4,5,6,7,8,9,25,26,63,64,65,66,67,68,74,75,76,93,94,95,102,103,111,112,113,114,123,129,130,131,133,134,135,136,137,143,147,148,149,154,157,160,175,176,179,180,181,201,212,242,246,247,248">IvChecked+</label>');
+        showOnly.append('<h4>Show only <input type="checkbox" value="showonly" id="showonly"> <a id="toggleShowOnlyVisability" href="javascript:"> >>> </a></h4>');
+        var boxes = $("<div id='showOnlyBoxes' style='display:" + showOnlyBoxes + ";'>");
+        boxes.append('<label><input type="checkbox" value="shownotify">Notify</label>');
+        boxes.append('<label><input type="checkbox" value="1,2,3,4,5,6,7,8,9,25,26,63,64,65,66,67,68,69,70,71,74,75,76,83,92,93,94,95,102,103,106,107,108,111,112,113,114,115,122,123,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,172,173,174,175,176,179,180,181,182,186,196,197,199,201,203,208,212,213,214,222,225,228,229,230,231,232,233,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,280,281,282,287,288,289,296,297,304,305,306,307,308,349,350,363,364,365,369,371,372,373,374,375,376,377,378,379,380,381,382,383,384,385,386">IvChecked+</label>');
+        boxes.append('<label><input type="checkbox" value="252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378,379,380,381,382,383,384,385,386">Gen 3</label>');
+        boxes.append('<label><input type="checkbox" value="1,2,3">1-Bulbasaur+</label>');
+        boxes.append('<label><input type="checkbox" value="4,5,6">4-Charmander+</label>');
+        // boxes.append('<label><input type="checkbox" value="58,59">58-Growlithe+</label>');
+        boxes.append('<label><input type="checkbox" value="63,64,65">63-Abra+</label>');
+        boxes.append('<label><input type="checkbox" value="66,67,68">66-Machop+</label>');
+        boxes.append('<label><input type="checkbox" value="74,75,76">74-Geodude+</label>');
+        boxes.append('<label><input type="checkbox" value="92,93,94">92-Gastly+</label>');
+        boxes.append('<label><input type="checkbox" value="102,103">102-Exeggcute+</label>');
+        boxes.append('<label><input type="checkbox" value="111,112">111-Rhyhorn+</label>');
+        boxes.append('<label><input type="checkbox" value="113,242">113-Chansey+</label>');
+        boxes.append('<label><input type="checkbox" value="131">131-Lapras</label>');
+        boxes.append('<label><input type="checkbox" value="133,134,135,136,196,197">133-Eevee+</label>');
+        boxes.append('<label><input type="checkbox" value="138,139">138-Omanyte+</label>');
+        boxes.append('<label><input type="checkbox" value="143">143-Snorlax</label>');
+        boxes.append('<label><input type="checkbox" value="147,148,149">147-Dratini+</label>');
+        //boxes.append('<label><input type="checkbox" value="228,229">228-Houndour+</label>');
+        boxes.append('<label><input type="checkbox" value="246,247,248">246-Larvitar+</label>');
+
+        boxes.append('<label><input type="checkbox" value="252,253,254">252-Treecko+</label>');
+        boxes.append('<label><input type="checkbox" value="255,256,257">255-Torchic+</label>');
+        boxes.append('<label><input type="checkbox" value="258,259,260">258-Mudkip+</label>');
+        boxes.append('<label><input type="checkbox" value="280,281,282">280-Ralts+</label>');
+        boxes.append('<label><input type="checkbox" value="285,286">285-Breloom+</label>');
+        boxes.append('<label><input type="checkbox" value="287,288,289">287-Slakoth+</label>');
+        boxes.append('<label><input type="checkbox" value="296,297">296-Makuhita+</label>');
         
-        showOnly.append('<label>Custom<input type="text"></label>');
+        //boxes.append('<label><input type="checkbox" value="304,305,306">304-Aron+</label>');
+        //boxes.append('<label><input type="checkbox" value="349,350">349-Feebas+</label>');
+        //boxes.append('<label><input type="checkbox" value="371,372,373">371-Bagon+</label>');
+        //boxes.append('<label><input type="checkbox" value="374,375,376">374-Beldum+</label>');  
+        
+        boxes.append('<br/><label>Custom<input type="text"></label>');
+        showOnly.append(boxes);
+
+        //Actions
+        showOnly.find("A#toggleShowOnlyVisability").click(function(){
+            var boxes = showOnly.find("DIV#showOnlyBoxes");
+            if(boxes.is(":visible")){
+                showOnlyBoxes = "none";
+            }else{
+                showOnlyBoxes = "block";
+            }
+            
+            boxes.toggle(400);
+            
+        });
 
         //Apply show only settings
         showOnly.find("INPUT[type=checkbox]").each(function () {
@@ -789,14 +818,13 @@ MaS.PoGo.fn = (function () {
 
         //Zoom levels
         var zoomLvl = $("<div class='quick'><h4>Zoom level</h4></div>");
-        zoomLvl.append("<div><a href='javascript:' data-zoomlvl='-'>Zoom--</a></div>")
-        zoomLvl.append("<div><a href='javascript:' data-zoomlvl='+'>Zoom++</a></div>")
+        zoomLvl.append("<div><a href='javascript:' data-zoomlvl='10' data-latlng='59.32758578719692,18.07140137459146'>Stor Sthlm zoom and center</a></div>")
+        zoomLvl.append("<div><a href='javascript:' data-zoomlvl='14' data-latlng='59.32758578719692,18.071401374591446'>Sthlm city zoom and center</a></div>")
         zoomLvl.append("<div><a href='javascript:' data-zoomlvl='10'>Zoom out (lvl 10)</a></div>")
         zoomLvl.append("<div><a href='javascript:' data-zoomlvl='14'>Zoom in (lvl 14)</a></div>")
         zoomLvl.append("<div><a href='javascript:' data-zoomlvl='16' data-latlng='59.3250458369,18.070779102100005'>Default zoom and default center</a></div>")
-        zoomLvl.append("<div><a href='javascript:' data-zoomlvl='10' data-latlng='59.32758578719692,18.07140137459146'>Stor Sthlm zoom and center</a></div>")
-        zoomLvl.append("<div><a href='javascript:' data-zoomlvl='14' data-latlng='59.32758578719692,18.071401374591446'>Sthlm city zoom and center</a></div>")
         zoomLvl.append("<div><a href='javascript:' data-zoomlvl='16' data-latlng='59.37156059938661,18.003938453448868'>MoS zoom and center</a></div>")
+        zoomLvl.append("<div><a href='javascript:' data-zoomlvl='-'>Zoom--</a> | <a href='javascript:' data-zoomlvl='+'>Zoom++</a></div>")
         zoomLvl.find("A").click(function () {
             var zLvl = $(this).data("zoomlvl");
             var latlng = $(this).data("latlng");
