@@ -350,9 +350,9 @@ MaS.PoGo.fn = (function () {
     function overrideNotifyToaster() {
         window.sendToastrPokemonNotification = function (e, t, n, a, o) {
             var i = toastr.info(t, e, {
-                closeButton: !0,
+                closeButton: true,
                 positionClass: "toast-top-left",
-                preventDuplicates: !0,
+                preventDuplicates: true,
                 onclick: function e() {
                     centerMap(a, o, 20)
                 },
@@ -373,6 +373,23 @@ MaS.PoGo.fn = (function () {
                     "background-color": "#0c5952"
                 })
         }
+
+        var errorToastrFunc = toastr.error;
+        toastr.error = function(msg, head, opt){
+            errorToastrFunc(msg, head, {
+                closeButton: true,
+                positionClass: "toast-top-left",
+                preventDuplicates: true,
+                showDuration: "300",
+                hideDuration: "500",
+                timeOut: "3000",
+                extendedTimeOut: "1500",
+                showEasing: "swing",
+                hideEasing: "linear",
+                showMethod: "fadeIn",
+                hideMethod: "fadeOut"
+            });
+        };
     }
 
     //PokeSet Helpers
@@ -740,7 +757,7 @@ MaS.PoGo.fn = (function () {
             if (!isNaN($(this).val())) {
                 settings.refreshInterval = Number($(this).val());
             } else {
-                $(this).val(settings.refreshInterval)
+                $(this).val(settings.refreshInterval);
             }
         });
         dataDiv.append(timeout);
