@@ -13,6 +13,9 @@
     $("label").change(function(){
         alert($(this).find("input").prop("checked"));
     });
+
+    Object.entries(mapData.gyms).map(function(g,k){return g[1];}).filter(function(a){return a.name.indexOf("Buss") != -1})
+
     </script>
 </body>
 </html>
