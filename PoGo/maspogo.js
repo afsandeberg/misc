@@ -589,6 +589,7 @@ MaS.PoGo.fn = (function () {
         boxes.append('<label><input type="checkbox" value="287,288,289">287-Slakoth+</label>');
         boxes.append('<label><input type="checkbox" value="296,297">296-Makuhita+</label>');
         
+        boxes.append('<label><input type="checkbox" value="328,329,330">328-Trapinch+</label>');
         boxes.append('<label><input type="checkbox" value="304,305,306">304-Aron+</label>');
         boxes.append('<label><input type="checkbox" value="349,350">349-Feebas+</label>');
         boxes.append('<label><input type="checkbox" value="371,372,373">371-Bagon+</label>');
